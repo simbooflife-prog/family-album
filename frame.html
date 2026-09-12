@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black"/>
 <title>Family Album Frame</title>
-<!-- frame FRAME_BUILD=20260912-ui12 v=20260912-ui12 (bump Lovelace ?v= on HA deploy) square-stage 1:1 photo-only-zoom hud-fixed gesture-lock layout-guides-edit-only snap-align hud-clock no-pill drag-clock calweather-combined swipe-weeks add-event delete-event week.json forecast.json preserve-add-modal-input overview-layout-lock gear-edit-mode save-touch-fix tasks-tab-shell hub-bottom-nav tasks-webhooks-claim-complete profile-picker lists-tab lists-webhooks-add-toggle-clear meals-tab meals-webhooks-set-clear-upsert board-tab board-webhooks-add-delete-pin settings-tab settings-pin-sleep-idle fun-tab-games fun-unlocked-gate games_state.json -->
+<!-- frame FRAME_BUILD=20260912-ui13 v=20260912-ui13 (bump Lovelace ?v= on HA deploy) square-stage 1:1 photo-only-zoom hud-fixed gesture-lock layout-guides-edit-only snap-align hud-clock no-pill drag-clock calweather-combined swipe-weeks add-event delete-event week.json forecast.json preserve-add-modal-input overview-layout-lock gear-edit-mode save-touch-fix tasks-tab-shell hub-bottom-nav tasks-webhooks-claim-complete profile-picker lists-tab lists-webhooks-add-toggle-clear meals-tab meals-webhooks-set-clear-upsert board-tab board-webhooks-add-delete-pin settings-tab settings-pin-sleep-idle settings-ia-researcher-order fun-tab-games fun-unlocked-gate games_state.json -->
 <style>
   html,body{margin:0;height:100%;background:#0a1220;overflow:hidden;touch-action:manipulation;-webkit-user-select:none;user-select:none}
   html.standby-page,html.standby-page body{background:#000}
@@ -1924,6 +1924,30 @@
   #fa-settings .fa-set-about .fa-set-mono{
     font:700 13px/1.3 ui-monospace,SFMono-Regular,Menlo,monospace;opacity:.85;
   }
+  #fa-settings .fa-set-profiles{display:flex;flex-direction:column;gap:0}
+  #fa-settings .fa-set-profile-row{
+    display:flex;align-items:center;gap:10px;min-height:44px;
+    padding:6px 0;border-bottom:1px solid rgba(255,255,255,.08);
+  }
+  #fa-settings .fa-set-profile-row:last-child{border-bottom:0;padding-bottom:2px}
+  #fa-settings .fa-set-dot{
+    width:14px;height:14px;border-radius:50%;flex:0 0 auto;
+    border:1px solid rgba(255,255,255,.25);
+  }
+  #fa-settings .fa-set-profile-meta{flex:1 1 auto;min-width:0}
+  #fa-settings .fa-set-profile-name{font:700 15px/1.2 -apple-system,sans-serif}
+  #fa-settings .fa-set-profile-role{
+    display:block;margin-top:2px;font:600 12px/1.3 -apple-system,sans-serif;opacity:.6;text-transform:capitalize;
+  }
+  #fa-settings .fa-set-section[data-section="danger"] .fa-set-sec-toggle{
+    color:rgba(255,168,156,.92);
+  }
+  #fa-settings .fa-set-actions button.danger{
+    background:rgba(180,55,50,.42);border-color:rgba(255,140,130,.5);
+  }
+  #fa-settings .fa-set-danger-note{
+    margin:8px 0 0;font:600 12px/1.35 -apple-system,sans-serif;opacity:.62;
+  }
   html.hub-tab-settings #sb-calweather,
   html.hub-tab-settings #sb-week,
   html.hub-tab-settings #sb-forecast,
@@ -2203,8 +2227,8 @@
   <div class="fa-settings-status" id="fa-settings-status" role="status" aria-live="polite"></div>
   <div class="fa-settings-scroll" id="fa-settings-body">
 
-    <section class="fa-set-section" data-section="security" aria-labelledby="fa-set-sec-security">
-      <h3 class="fa-set-sec" id="fa-set-sec-security"><span class="fa-set-sec-ico" aria-hidden="true">🔒</span> Security &amp; Privacy</h3>
+    <section class="fa-set-section" data-section="lock" aria-labelledby="fa-set-sec-lock">
+      <h3 class="fa-set-sec" id="fa-set-sec-lock"><span class="fa-set-sec-ico" aria-hidden="true">🔒</span> Lock / PIN</h3>
       <div class="fa-set-card" id="fa-set-pin-card">
         <div class="fa-set-row">
           <div class="fa-set-label">PIN lock
@@ -2230,6 +2254,7 @@
               <input type="password" id="fa-set-pin-confirm" inputmode="numeric" pattern="[0-9]*" maxlength="8" autocomplete="new-password" placeholder="••••" />
             </div>
           </div>
+          <p class="fa-set-hint" style="margin:10px 0 0">Avoid 0000, 1234, 1111, 9999 — too easy to guess.</p>
           <div class="fa-set-actions">
             <button type="button" class="primary" id="fa-set-pin-save">Save PIN</button>
             <button type="button" id="fa-set-pin-clear" hidden>Clear PIN</button>
@@ -2238,12 +2263,12 @@
       </div>
     </section>
 
-    <section class="fa-set-section" data-section="display" aria-labelledby="fa-set-sec-display">
-      <h3 class="fa-set-sec" id="fa-set-sec-display"><span class="fa-set-sec-ico" aria-hidden="true">🌙</span> Display &amp; Sleep</h3>
+    <section class="fa-set-section" data-section="sleep" aria-labelledby="fa-set-sec-sleep">
+      <h3 class="fa-set-sec" id="fa-set-sec-sleep"><span class="fa-set-sec-ico" aria-hidden="true">🌙</span> Sleep / dim</h3>
       <div class="fa-set-card">
         <div class="fa-set-row">
           <div class="fa-set-label">Sleep schedule
-            <span class="fa-set-hint">Dim screen overnight · tap to wake briefly</span>
+            <span class="fa-set-hint">Dim overnight · tap the veil to wake briefly</span>
           </div>
           <button type="button" class="fa-toggle" id="fa-set-sleep-enabled" aria-pressed="false" aria-label="Enable sleep schedule"></button>
         </div>
@@ -2266,11 +2291,14 @@
             <button type="button" class="primary" id="fa-set-sleep-save">Save sleep</button>
           </div>
         </div>
+        <div class="fa-set-actions">
+          <button type="button" id="fa-set-sleep-now">Sleep now</button>
+        </div>
       </div>
     </section>
 
-    <section class="fa-set-section" data-section="home" aria-labelledby="fa-set-sec-home">
-      <h3 class="fa-set-sec" id="fa-set-sec-home"><span class="fa-set-sec-ico" aria-hidden="true">🏠</span> Home &amp; Idle</h3>
+    <section class="fa-set-section" data-section="idle" aria-labelledby="fa-set-sec-idle">
+      <h3 class="fa-set-sec" id="fa-set-sec-idle"><span class="fa-set-sec-ico" aria-hidden="true">🏠</span> Idle</h3>
       <div class="fa-set-card">
         <div class="fa-set-fields">
           <div class="fa-set-field" style="flex:1 1 100%">
@@ -2278,7 +2306,7 @@
             <input type="number" id="fa-set-idle" min="30" max="3600" step="10" value="120" />
           </div>
         </div>
-        <p class="fa-set-hint" style="margin:8px 0 0">No touch on the full frame → Home / photos. Layout edit stays on the Home gear — not here.</p>
+        <p class="fa-set-hint" style="margin:8px 0 0">No touch on the full frame → Home / photos. Separate from Sleep. Layout edit stays on the Home gear — not here.</p>
         <div class="fa-set-actions">
           <button type="button" class="primary" id="fa-set-idle-save">Save idle</button>
         </div>
@@ -2286,7 +2314,7 @@
     </section>
 
     <section class="fa-set-section" data-section="fun" aria-labelledby="fa-set-sec-fun">
-      <h3 class="fa-set-sec" id="fa-set-sec-fun"><span class="fa-set-sec-ico" aria-hidden="true">🎮</span> Fun &amp; Kids</h3>
+      <h3 class="fa-set-sec" id="fa-set-sec-fun"><span class="fa-set-sec-ico" aria-hidden="true">🎮</span> Fun</h3>
       <div class="fa-set-card">
         <div class="fa-set-row">
           <div class="fa-set-label">Unlock Fun tab
@@ -2297,27 +2325,11 @@
       </div>
     </section>
 
-    <section class="fa-set-section fa-set-advanced" data-section="advanced">
-      <button type="button" class="fa-set-sec-toggle" id="fa-set-adv-toggle" aria-expanded="false" aria-controls="fa-set-adv-body">
-        <span><span class="fa-set-sec-ico" aria-hidden="true">⋯</span> Advanced</span>
-        <span class="chev" aria-hidden="true">›</span>
-      </button>
-      <div class="fa-set-card" id="fa-set-adv-body" hidden>
-        <div class="fa-set-muted-row">
-          <div class="fa-set-label">Profiles
-            <span class="fa-set-hint">People &amp; colors live on Tasks / Fun pickers — not duplicated here</span>
-          </div>
-        </div>
-        <div class="fa-set-muted-row">
-          <div class="fa-set-label">Rewards
-            <span class="fa-set-hint">Stars catalog stays with Tasks — future Settings link only if needed</span>
-          </div>
-        </div>
-        <div class="fa-set-muted-row">
-          <div class="fa-set-label">Layout edit
-            <span class="fa-set-hint">Use the Home gear (PIN-gated when lock is on)</span>
-          </div>
-        </div>
+    <section class="fa-set-section" data-section="profiles" aria-labelledby="fa-set-sec-profiles">
+      <h3 class="fa-set-sec" id="fa-set-sec-profiles"><span class="fa-set-sec-ico" aria-hidden="true">👤</span> Profiles</h3>
+      <div class="fa-set-card">
+        <div class="fa-set-profiles" id="fa-set-profiles-list"></div>
+        <p class="fa-set-hint" style="margin:10px 0 0">Read-only here. Full edit stays on Tasks / profiles.json — no profile write webhook yet.</p>
       </div>
     </section>
 
@@ -2329,6 +2341,32 @@
             <span class="fa-set-hint">Build <span class="fa-set-mono" id="fa-set-build">—</span></span>
           </div>
         </div>
+      </div>
+    </section>
+
+    <section class="fa-set-section" data-section="danger">
+      <button type="button" class="fa-set-sec-toggle" id="fa-set-danger-toggle" aria-expanded="false" aria-controls="fa-set-danger-body">
+        <span><span class="fa-set-sec-ico" aria-hidden="true">⚠</span> Danger</span>
+        <span class="chev" aria-hidden="true">›</span>
+      </button>
+      <div class="fa-set-card" id="fa-set-danger-body" hidden>
+        <div class="fa-set-row">
+          <div class="fa-set-label">Reset Fun scores
+            <span class="fa-set-hint">Scores live in games_state.json — no reset webhook yet</span>
+          </div>
+        </div>
+        <div class="fa-set-actions">
+          <button type="button" class="danger" id="fa-set-fun-reset">Reset Fun scores</button>
+        </div>
+        <div class="fa-set-row" style="margin-top:12px">
+          <div class="fa-set-label">Clear local queue UI
+            <span class="fa-set-hint">Drops pending / optimistic overlays on this tablet only</span>
+          </div>
+        </div>
+        <div class="fa-set-actions">
+          <button type="button" id="fa-set-clear-queue">Clear local queue UI state</button>
+        </div>
+        <p class="fa-set-danger-note">No factory wipe from the frame. HA data stays put unless you edit files / docs on the host. See DEPLOY.md.</p>
       </div>
     </section>
 
@@ -2369,7 +2407,7 @@
 
 <script>
 /* Identifiable deploy build — bump Lovelace iframe ?v= separately on HA. */
-const FRAME_BUILD = '20260912-ui12';
+const FRAME_BUILD = '20260912-ui13';
 try { window.FRAME_BUILD = FRAME_BUILD; } catch (e) {}
 const FALLBACK = [
   "/local/family-album/filler_forest.jpg",
@@ -4490,6 +4528,7 @@ const SETTINGS_STATE = {
   busy: false,
   unlockedUntil: 0, // ms epoch after successful PIN verify
   sleepAwakeUntil: 0, // brief wake from sleep veil
+  forceSleep: false, // client-side Sleep now until tap-wake
   pendingPinAction: null // { type:'settings'|'gear' }
 };
 const FUN_STATE = {
@@ -4624,6 +4663,9 @@ function setHubTab(tab){
   if (tab === 'settings') {
     try { renderSettingsPanel(); } catch (e) {}
     try { loadSettingsData(); } catch (e) {}
+    try {
+      if (!(TASKS_STATE.profiles || []).length) loadTasksData();
+    } catch (e) {}
   }
   try { noteUserActivity(); } catch (e) {}
   syncHubNavVisibility();
@@ -4801,6 +4843,9 @@ async function loadTasksData(){
     TASKS_STATE.loadError = '';
   }
   if (hubTab === 'tasks') renderTasksPanel();
+  if (hubTab === 'settings') {
+    try { renderSettingsProfiles(); } catch (e) {}
+  }
   return { profilesOk: !!(pr.ok && !pr.empty), tasksOk: !!(tk.ok && !tk.empty) };
 }
 
@@ -6836,6 +6881,74 @@ async function loadSettingsData(){
   return { ok:true, data:res.data };
 }
 
+const WEAK_PINS = ['0000', '1234', '1111', '9999'];
+
+function isWeakPin(pin){
+  return WEAK_PINS.indexOf(String(pin || '').trim()) !== -1;
+}
+
+function renderSettingsProfiles(){
+  const el = document.getElementById('fa-set-profiles-list');
+  if (!el) return;
+  const profiles = TASKS_STATE.profiles || [];
+  if (!profiles.length) {
+    el.innerHTML = '<p class="fa-set-hint" style="margin:0">No profiles in profiles.json yet.</p>';
+    return;
+  }
+  el.innerHTML = profiles.map(function(p){
+    const role = p.role ? String(p.role) : 'family';
+    const color = String(p.color || '#90CAF9').replace(/"/g, '');
+    return '<div class="fa-set-profile-row">' +
+      '<span class="fa-set-dot" style="background:' + color + '" aria-hidden="true"></span>' +
+      '<div class="fa-set-profile-meta">' +
+        '<div class="fa-set-profile-name">' + escapeHtml(p.name || p.id) + '</div>' +
+        '<span class="fa-set-profile-role">' + escapeHtml(role) + '</span>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function sleepNowClient(){
+  SETTINGS_STATE.forceSleep = true;
+  SETTINGS_STATE.sleepAwakeUntil = 0;
+  try { applySleepVeil(); } catch (e) {}
+  setSettingsStatus('Sleeping — tap the screen to wake');
+}
+
+function resetFunScoresStub(){
+  setSettingsStatus('Fun scores stay in games_state.json — no reset webhook yet. Edit that HA file to clear.');
+}
+
+function clearLocalQueueUiState(){
+  try { TASKS_STATE.optimistic = {}; } catch (e) {}
+  try {
+    LISTS_STATE.optimisticDone = {};
+    LISTS_STATE.pendingAdds = {};
+    LISTS_STATE.pendingClears = {};
+  } catch (e2) {}
+  try {
+    MEALS_STATE.optimisticSlots = {};
+    MEALS_STATE.optimisticRecipes = {};
+  } catch (e3) {}
+  try {
+    BOARD_STATE.pendingAdds = {};
+    BOARD_STATE.pendingDeletes = {};
+    BOARD_STATE.optimisticPinned = {};
+  } catch (e4) {}
+  try {
+    FUN_STATE.ttt = null;
+    FUN_STATE.memory = null;
+    FUN_STATE.word = null;
+    FUN_STATE.view = 'hub';
+  } catch (e5) {}
+  try { if (hubTab === 'tasks') renderTasksPanel(); } catch (e6) {}
+  try { if (hubTab === 'lists') renderListsPanel(); } catch (e7) {}
+  try { if (hubTab === 'meals') renderMealsPanel(); } catch (e8) {}
+  try { if (hubTab === 'board') renderBoardPanel(); } catch (e9) {}
+  try { if (hubTab === 'fun') renderFunPanel(); } catch (e10) {}
+  setSettingsStatus('Local queue UI cleared — HA data unchanged');
+}
+
 function setToggleEl(el, on){
   if (!el) return;
   el.classList.toggle('on', !!on);
@@ -6863,7 +6976,7 @@ function syncSettingsDisclosures(){
 
 function renderSettingsPanel(){
   const sub = document.getElementById('fa-settings-sub');
-  if (sub) sub.textContent = 'Security · sleep · idle · fun';
+  if (sub) sub.textContent = 'Lock · sleep · idle · fun';
   const buildEl = document.getElementById('fa-set-build');
   if (buildEl) {
     try { buildEl.textContent = String(FRAME_BUILD || window.FRAME_BUILD || '—'); }
@@ -6905,6 +7018,7 @@ function renderSettingsPanel(){
   const idleEl = document.getElementById('fa-set-idle');
   if (idleEl) idleEl.value = String(SETTINGS_STATE.idle_home_seconds);
 
+  try { renderSettingsProfiles(); } catch (e) {}
   try { syncSettingsDisclosures(); } catch (e) {}
 
   // Never leave raw PIN in the change fields after render
@@ -7091,7 +7205,7 @@ function applySleepVeil(){
     return;
   }
   const awake = Date.now() < (SETTINGS_STATE.sleepAwakeUntil || 0);
-  const should = inSettingsSleepWindow() && !awake;
+  const should = (SETTINGS_STATE.forceSleep || inSettingsSleepWindow()) && !awake;
   if (should) {
     const dim = Math.max(0.05, Math.min(0.95, Number(SETTINGS_STATE.sleep.dim) || 0.3));
     veil.classList.add('on');
@@ -7105,6 +7219,7 @@ function applySleepVeil(){
 }
 
 function wakeFromSleepBriefly(){
+  SETTINGS_STATE.forceSleep = false;
   SETTINGS_STATE.sleepAwakeUntil = Date.now() + 45000; // 45s
   applySleepVeil();
   try { noteUserActivity(); } catch (e) {}
@@ -7168,15 +7283,15 @@ function bindSettingsPanelOnce(){
     }, false);
   }
 
-  const advToggle = document.getElementById('fa-set-adv-toggle');
-  if (advToggle && !advToggle._bound) {
-    advToggle._bound = true;
-    advToggle.addEventListener('click', function(ev){
+  const dangerToggle = document.getElementById('fa-set-danger-toggle');
+  if (dangerToggle && !dangerToggle._bound) {
+    dangerToggle._bound = true;
+    dangerToggle.addEventListener('click', function(ev){
       try { ev.preventDefault(); ev.stopPropagation(); } catch (e) {}
-      const body = document.getElementById('fa-set-adv-body');
+      const body = document.getElementById('fa-set-danger-body');
       if (!body) return;
-      const open = advToggle.getAttribute('aria-expanded') !== 'true';
-      advToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+      const open = dangerToggle.getAttribute('aria-expanded') !== 'true';
+      dangerToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
       body.hidden = !open;
     }, false);
   }
@@ -7212,6 +7327,10 @@ function bindSettingsPanelOnce(){
       }
       if (p1 !== p2) {
         setSettingsStatus('PIN confirmation does not match');
+        return;
+      }
+      if (isWeakPin(p1)) {
+        setSettingsStatus('Too easy to guess — pick something other than 0000, 1234, 1111, or 9999');
         return;
       }
       const partial = { pin: p1 };
@@ -7301,6 +7420,33 @@ function bindSettingsPanelOnce(){
       SETTINGS_STATE.fun_unlocked = next;
       setToggleEl(funEn, next);
       await postSettingsUpdate({ fun_unlocked: next });
+    }, false);
+  }
+
+  const sleepNowBtn = document.getElementById('fa-set-sleep-now');
+  if (sleepNowBtn && !sleepNowBtn._bound) {
+    sleepNowBtn._bound = true;
+    sleepNowBtn.addEventListener('click', function(ev){
+      try { ev.preventDefault(); ev.stopPropagation(); } catch (e) {}
+      sleepNowClient();
+    }, false);
+  }
+
+  const funReset = document.getElementById('fa-set-fun-reset');
+  if (funReset && !funReset._bound) {
+    funReset._bound = true;
+    funReset.addEventListener('click', function(ev){
+      try { ev.preventDefault(); ev.stopPropagation(); } catch (e) {}
+      resetFunScoresStub();
+    }, false);
+  }
+
+  const clearQueue = document.getElementById('fa-set-clear-queue');
+  if (clearQueue && !clearQueue._bound) {
+    clearQueue._bound = true;
+    clearQueue.addEventListener('click', function(ev){
+      try { ev.preventDefault(); ev.stopPropagation(); } catch (e) {}
+      clearLocalQueueUiState();
     }, false);
   }
 
