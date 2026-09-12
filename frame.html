@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black"/>
 <title>Family Album Frame</title>
-<!-- frame v=20260912addev1 square-stage 1:1 photo-only-zoom hud-fixed gesture-lock layout-guides-edit-only snap-align hud-clock no-pill drag-clock calweather-combined swipe-weeks add-event week.json forecast.json preserve-add-modal-input -->
+<!-- frame FRAME_BUILD=20260912-ui1 v=20260912-ui1 (bump Lovelace ?v= on HA deploy) square-stage 1:1 photo-only-zoom hud-fixed gesture-lock layout-guides-edit-only snap-align hud-clock no-pill drag-clock calweather-combined swipe-weeks add-event week.json forecast.json preserve-add-modal-input -->
 <style>
   html,body{margin:0;height:100%;background:#0a1220;overflow:hidden;touch-action:manipulation;-webkit-user-select:none;user-select:none}
   html.standby-page,html.standby-page body{background:#000}
@@ -830,6 +830,21 @@
   }
   #cw-add-modal .cw-form button.primary,#cw-add-modal .cw-add-sheet button.primary{background:rgba(80,160,255,.65)}
   #cw-add-modal .cw-form .msg,#cw-add-modal .cw-add-sheet .msg{opacity:.75;min-height:1.1em;font-size:13px}
+  #cw-add-modal .cw-add-sheet .field{display:flex;flex-direction:column;gap:4px}
+  #cw-add-modal .cw-add-sheet .field-hint{opacity:.55;font:500 12px/1.3 -apple-system,sans-serif;margin:0}
+  #cw-add-modal .cw-add-sheet label{display:block;opacity:.82;font-size:.9em;letter-spacing:.02em}
+  #cw-add-modal .cw-add-sheet input:focus{
+    outline:2px solid rgba(80,160,255,.85);outline-offset:1px;border-color:rgba(120,180,255,.7);
+  }
+  #cw-add-modal .cw-add-sheet .msg.warn{color:#ffc978}
+  #cw-add-modal .cw-add-sheet .msg.ok{color:#9dffa8}
+  #sb-calweather .cw-status{
+    margin:2px 0 0;padding:0 2px;
+    font:600 calc(var(--cw-font,18px) * 0.48)/1.25 -apple-system,sans-serif;
+    opacity:.72;letter-spacing:.01em;min-height:1.1em;
+  }
+  #sb-calweather .cw-status.err{opacity:.9;color:#ffb4b4}
+  #sb-calweather .cw-status.empty{opacity:.58}
   #sb-calweather .cw-hourly{
     display:none;gap:6px;overflow-x:auto;max-width:100%;
     padding:2px 0 0;scrollbar-width:none;-ms-overflow-style:none;
@@ -972,14 +987,22 @@
   </div>
   <div id="cw-add-modal" aria-hidden="true">
     <div class="cw-add-backdrop" id="cw-add-backdrop" aria-hidden="true"></div>
-    <div class="cw-add-sheet" role="dialog" aria-label="Add event">
-      <h3>Add event</h3>
-      <label for="cw-title">Title</label><input id="cw-title" type="text" maxlength="120" placeholder="Event" autocomplete="off"/>
-      <div class="row"><div><label for="cw-date">Day</label><input id="cw-date" type="date" value=""/></div>
-      <div><label for="cw-time">Time</label><input id="cw-time" type="time" value="" title="Leave empty for all-day"/></div></div>
+    <div class="cw-add-sheet" role="dialog" aria-labelledby="cw-add-heading" aria-modal="true">
+      <h3 id="cw-add-heading">Add to House calendar</h3>
+      <p class="field-hint">Writes stay client-side / queued until HA calendar API is stable. Typing is preserved while the week refreshes.</p>
+      <div class="field">
+        <label for="cw-title">Event title</label>
+        <input id="cw-title" type="text" maxlength="120" placeholder="e.g. Soccer practice" autocomplete="off" enterkeyhint="done"/>
+      </div>
+      <div class="row">
+        <div class="field"><label for="cw-date">Date</label><input id="cw-date" type="date" value=""/></div>
+        <div class="field"><label for="cw-time">Time <span style="opacity:.65;font-weight:500">(optional)</span></label>
+        <input id="cw-time" type="time" value="" title="Leave empty for all-day" placeholder="All day"/></div>
+      </div>
+      <p class="field-hint">Leave time blank for an all-day event.</p>
       <div class="actions"><button type="button" id="cw-cancel">Cancel</button>
       <button type="button" class="primary" id="cw-save">Save</button></div>
-      <div class="msg" id="cw-msg"></div>
+      <div class="msg" id="cw-msg" role="status" aria-live="polite"></div>
     </div>
   </div>
   <div id="sb-week" aria-hidden="false">
@@ -992,6 +1015,9 @@
 </div>
 
 <script>
+/* Identifiable deploy build — bump Lovelace iframe ?v= separately on HA. */
+const FRAME_BUILD = '20260912-ui1';
+try { window.FRAME_BUILD = FRAME_BUILD; } catch (e) {}
 const FALLBACK = [
   "/local/family-album/filler_forest.jpg",
   "/local/family-album/filler_ocean.jpg",
@@ -2931,7 +2957,9 @@ let CALWEATHER = {
   weekOffset: 0,
   formOpen: false,
   feed: null,
-  swipeBound: false
+  swipeBound: false,
+  weekStatus: 'loading', // loading | ok | empty | error
+  weekError: ''
 };
 let _weekCache = null;
 const CAL_EVENT_WEBHOOK = 'fa_cal_evt_7c3a91e2b4d06f18a9e55c21';
@@ -3150,16 +3178,26 @@ function buildWeekDaysForStart(weekStartYmd){
 
 function eventsFromFeedForDate(ymd){
   const feed = CALWEATHER.feed || _weekCache || null;
-  if (!feed) return [];
+  if (!feed || typeof feed !== 'object') return [];
+  const key = String(ymd || '');
+  if (!key) return [];
   const bags = [];
-  if (Array.isArray(feed.days)) bags.push(feed.days);
-  if (Array.isArray(feed.weeks)) {
-    feed.weeks.forEach(function(w){ if (w && Array.isArray(w.days)) bags.push(w.days); });
-  }
+  try {
+    if (Array.isArray(feed.days)) bags.push(feed.days);
+    if (Array.isArray(feed.weeks)) {
+      feed.weeks.forEach(function(w){ if (w && Array.isArray(w.days)) bags.push(w.days); });
+    }
+  } catch (e) { return []; }
   for (let b=0;b<bags.length;b++){
-    for (let i=0;i<bags[b].length;i++){
-      const d = bags[b][i];
-      if (d && d.date === ymd && Array.isArray(d.events)) return d.events.slice(0, 4);
+    const bag = bags[b];
+    if (!Array.isArray(bag)) continue;
+    for (let i=0;i<bag.length;i++){
+      const d = bag[i];
+      if (!d || typeof d !== 'object') continue;
+      if (d.date === key) {
+        const evs = Array.isArray(d.events) ? d.events : [];
+        return evs.filter(function(ev){ return ev && typeof ev === 'object'; }).slice(0, 4);
+      }
     }
   }
   return [];
@@ -3250,16 +3288,28 @@ function syncCwAddModal(opts){
   // Only clear/reset fields when newly opening (or explicit reset).
   // Never wipe title/time while modal is already open — week/forecast/clock
   // refresh calls renderCalWeather -> syncCwAddModal and must preserve typing.
-  if (!(on && (opts.reset || !wasOn))) return;
+  if (!(on && (opts.reset || !wasOn))) {
+    // Keep date in sync with selected day only if user has not edited title/time yet
+    // and modal is already open without a reset — do nothing (preserve inputs).
+    return;
+  }
   const dateEl = document.getElementById('cw-date');
   const titleEl = document.getElementById('cw-title');
   const timeEl = document.getElementById('cw-time');
   const msg = document.getElementById('cw-msg');
   const d = CALWEATHER._formDate || '';
-  if (dateEl && d) dateEl.value = d;
-  if (titleEl) { titleEl.value = ''; try { titleEl.focus(); } catch (e) {} }
+  if (dateEl) dateEl.value = d || dateEl.value || '';
+  if (titleEl) {
+    titleEl.value = '';
+    try {
+      setTimeout(function(){ try { titleEl.focus(); titleEl.select && titleEl.select(); } catch (e2) {} }, 30);
+    } catch (e) {}
+  }
   if (timeEl) timeEl.value = '';
-  if (msg) msg.textContent = '';
+  if (msg) {
+    msg.className = 'msg';
+    msg.textContent = 'Title + date required. Time optional (blank = all day).';
+  }
 }
 
 function bindCwAddModalOnce(){
@@ -3286,11 +3336,17 @@ function bindCwAddModalOnce(){
     if (msg) msg.textContent = 'Saving…';
     const res = await submitCalwxEvent(title, date, time);
     if (msg) {
-      msg.textContent = res.ok
-        ? (res.via === 'local_queue'
-            ? 'Queued — add Google Calendar (House) in HA to sync'
-            : 'Saved')
-        : 'Need title + day';
+      if (res.ok) {
+        msg.className = 'msg ok';
+        msg.textContent = res.via === 'local_queue'
+          ? 'Queued locally — HA write API not wired yet'
+          : 'Saved';
+      } else {
+        msg.className = 'msg warn';
+        msg.textContent = res.error === 'need_fields' || !String(title||'').trim() || !String(date||'').trim()
+          ? 'Need an event title and a date'
+          : (res.error || 'Could not save');
+      }
     }
     if (res.ok && res.via !== 'local_queue') {
       setTimeout(closeCalwxForm, 600);
@@ -3377,6 +3433,18 @@ function renderCalWeather(){
   const toolbar = '<div class="cw-toolbar">' + hint +
     '<button type="button" class="cw-add" id="cw-add" aria-label="Add event">+</button></div>';
   const head = '<div class="cw-head"><span class="cw-title">' + month + '</span></div>';
+  let statusHtml = '';
+  const st = CALWEATHER.weekStatus || 'ok';
+  if (st === 'loading') {
+    statusHtml = '<div class="cw-status" id="cw-week-status">Loading calendar…</div>';
+  } else if (st === 'error') {
+    statusHtml = '<div class="cw-status err" id="cw-week-status">' +
+      (CALWEATHER.weekError || 'Could not load week.json') + '</div>';
+  } else if (st === 'empty') {
+    statusHtml = '<div class="cw-status empty" id="cw-week-status">No events this week</div>';
+  } else {
+    statusHtml = '<div class="cw-status" id="cw-week-status" hidden></div>';
+  }
   const boxH = el.getBoundingClientRect().height || 120;
   const weekHasEvents = (wk.days || []).some(function(d){ return (d.events || []).length > 0; });
   el.classList.toggle('has-events', weekHasEvents);
@@ -3439,7 +3507,7 @@ function renderCalWeather(){
     body.className = 'cw-body';
     el.insertBefore(body, el.firstChild);
   }
-  body.innerHTML = nowHtml + toolbar + head + '<div class="cw-days" id="cw-days">' + cols + '</div>' + hourlyHtml;
+  body.innerHTML = nowHtml + toolbar + head + statusHtml + '<div class="cw-days" id="cw-days">' + cols + '</div>' + hourlyHtml;
   if (showHourly || hours.length) el.classList.add('show-hourly');
   else el.classList.remove('show-hourly');
 
@@ -3747,29 +3815,39 @@ function buildEmptyWeek(){
 }
 
 function normalizeWeek(data){
-  if (data && typeof data === 'object') {
+  if (data && typeof data === 'object' && !Array.isArray(data)) {
     try { CALWEATHER.feed = data; } catch (e) {}
   }
   // Prefer interactive offset view (always 7 days)
   try {
     return weekViewForOffset(CALWEATHER.weekOffset || 0);
   } catch (e2) {}
-  if (!data || !Array.isArray(data.days) || data.days.length !== 7) {
+  if (!data || typeof data !== 'object' || Array.isArray(data) || !Array.isArray(data.days) || data.days.length < 1) {
     return buildEmptyWeek();
   }
   const today = ymdInTz(new Date(), WEEK_TZ);
+  const days = data.days.slice(0, 7).map(function(d){
+    d = d && typeof d === 'object' ? d : {};
+    const date = d.date || '';
+    return {
+      date: date,
+      dow: d.dow || d.weekday || '',
+      day: d.day != null ? d.day : (date ? Number(String(date).slice(-2)) : ''),
+      events: Array.isArray(d.events)
+        ? d.events.filter(function(ev){ return ev && typeof ev === 'object'; }).slice(0, 4)
+        : []
+    };
+  });
+  while (days.length < 7) {
+    days.push({date:'', dow:'', day:'', events:[]});
+  }
   return {
     timezone: data.timezone || WEEK_TZ,
-    week_start: data.week_start || (data.days[0] && data.days[0].date) || '',
+    week_start: data.week_start || (days[0] && days[0].date) || '',
     generated: data.generated || '',
     calendar_id: data.calendar_id || null,
-    days: data.days.map((d) => ({
-      date: d.date,
-      dow: d.dow || d.weekday || '',
-      day: d.day != null ? d.day : (d.date ? Number(String(d.date).slice(-2)) : ''),
-      events: Array.isArray(d.events) ? d.events.slice(0, 4) : []
-    })),
-    today
+    days: days,
+    today: today
   };
 }
 
@@ -3832,20 +3910,65 @@ function renderWeek(data){
   el.setAttribute('aria-hidden', 'true');
 }
 
+function weekFeedHasAnyEvents(data){
+  if (!data || typeof data !== 'object') return false;
+  const scan = function(days){
+    if (!Array.isArray(days)) return false;
+    for (let i=0;i<days.length;i++){
+      const d = days[i];
+      if (d && Array.isArray(d.events) && d.events.length) return true;
+    }
+    return false;
+  };
+  if (scan(data.days)) return true;
+  if (Array.isArray(data.weeks)) {
+    for (let w=0;w<data.weeks.length;w++){
+      if (data.weeks[w] && scan(data.weeks[w].days)) return true;
+    }
+  }
+  return false;
+}
+
 async function loadWeek(){
   let data = null;
+  let errMsg = '';
+  CALWEATHER.weekStatus = CALWEATHER.feed ? (CALWEATHER.weekStatus || 'ok') : 'loading';
   try {
     const r = await fetch('/local/family-album/week.json?v=' + Date.now(), {cache:'no-store'});
-    if (r.ok) data = await r.json();
-  } catch (e) {}
+    if (!r.ok) {
+      errMsg = 'week.json HTTP ' + r.status;
+    } else {
+      const raw = await r.text();
+      try {
+        data = JSON.parse(raw);
+      } catch (parseErr) {
+        errMsg = 'week.json is not valid JSON';
+        data = null;
+      }
+    }
+  } catch (e) {
+    errMsg = 'Could not reach week.json';
+  }
   try {
-    if (data && typeof data === 'object') {
+    if (data && typeof data === 'object' && !Array.isArray(data)) {
       CALWEATHER.feed = data;
+      CALWEATHER.weekError = '';
+      CALWEATHER.weekStatus = weekFeedHasAnyEvents(data) ? 'ok' : 'empty';
       if (Array.isArray(data.weeks) && data.weeks.length) {
         /* keep weekOffset; events pulled per visible date */
       }
+    } else if (errMsg) {
+      CALWEATHER.weekError = errMsg;
+      CALWEATHER.weekStatus = 'error';
+      // Keep last good feed if present so the strip still draws dates
+    } else {
+      CALWEATHER.weekError = 'week.json missing or malformed';
+      CALWEATHER.weekStatus = 'error';
     }
-  } catch (e2) {}
+  } catch (e2) {
+    CALWEATHER.weekStatus = 'error';
+    CALWEATHER.weekError = 'week.json parse failed';
+  }
   renderWeek(data);
 }
 

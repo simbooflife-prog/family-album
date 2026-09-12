@@ -24,12 +24,12 @@ Live URL base:
 https://1loiy6aum6qt4x1pp4isn1o6fbott58q.ui.nabu.casa/local/family-album/
 ```
 
-Current Lovelace cache buster: `?v=20260912addev1`
+Current in-file `FRAME_BUILD`: `20260912-ui1` (bump Lovelace `?v=` on HA to match on deploy).
 
 Example:
 
 ```
-/local/family-album/frame.html?v=20260912addev1
+/local/family-album/frame.html?v=20260912-ui1
 ```
 
 ## Symlink — do not treat as a second tree
@@ -50,7 +50,7 @@ Example:
 
 Never treat `/config/www/family-album` as a separate tree.
 
-Shorter copy: see [DEPLOY.md](DEPLOY.md).
+Shorter copy + md5 one-liners: see [DEPLOY.md](DEPLOY.md). Local: `./scripts/verify-local.sh` or `make verify`.
 
 ## What’s in this repo
 
@@ -58,7 +58,7 @@ Fetched from live Nabu Casa `/local/family-album/` on 2026-09-12 (no auth requir
 
 | File | Role |
 | --- | --- |
-| `frame.html` | Self-contained frame UI (inline CSS/JS). ~184812 bytes. |
+| `frame.html` | Self-contained frame UI (inline CSS/JS). See `FRAME_BUILD` inside. |
 | `week.json` | Generated week calendar feed |
 | `forecast.json` | Generated weather feed |
 | `images.json` | Slideshow manifest (filenames only; photos not in git) |
