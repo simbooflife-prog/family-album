@@ -24,12 +24,12 @@ Live URL base:
 https://1loiy6aum6qt4x1pp4isn1o6fbott58q.ui.nabu.casa/local/family-album/
 ```
 
-Current in-file `FRAME_BUILD`: `20260912-ui2` (bump Lovelace `?v=` on HA to match on deploy).
+Current in-file `FRAME_BUILD`: `20260912-ui3` (bump Lovelace `?v=` on HA to match on deploy).
 
 Example:
 
 ```
-/local/family-album/frame.html?v=20260912-ui2
+/local/family-album/frame.html?v=20260912-ui3
 ```
 
 ## Symlink — do not treat as a second tree
@@ -78,7 +78,7 @@ Family photos (`IMG_*.jpg`, `filler_*.jpg`, etc.) stay on HA under SOT and are g
 
 Build in this order:
 
-1. **Calendar** — week strip, add-event, swipe-weeks (in progress on the live frame)
+1. **Calendar** — week strip, add-event, delete-event (verified), swipe-weeks (in progress on the live frame)
 2. **Tasks**
 3. **Lists**
 4. **Meals + recipes**

@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black"/>
 <title>Family Album Frame</title>
-<!-- frame FRAME_BUILD=20260912-ui2 v=20260912-ui2 (bump Lovelace ?v= on HA deploy) square-stage 1:1 photo-only-zoom hud-fixed gesture-lock layout-guides-edit-only snap-align hud-clock no-pill drag-clock calweather-combined swipe-weeks add-event week.json forecast.json preserve-add-modal-input -->
+<!-- frame FRAME_BUILD=20260912-ui3 v=20260912-ui3 (bump Lovelace ?v= on HA deploy) square-stage 1:1 photo-only-zoom hud-fixed gesture-lock layout-guides-edit-only snap-align hud-clock no-pill drag-clock calweather-combined swipe-weeks add-event delete-event week.json forecast.json preserve-add-modal-input -->
 <style>
   html,body{margin:0;height:100%;background:#0a1220;overflow:hidden;touch-action:manipulation;-webkit-user-select:none;user-select:none}
   html.standby-page,html.standby-page body{background:#000}
@@ -746,6 +746,13 @@
     white-space:normal;overflow:hidden;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;
     max-height:calc(var(--cw-font,18px) * 1.05);opacity:.88;
   }
+  #sb-calweather .cw-ev.tap{
+    cursor:pointer;-webkit-tap-highlight-color:transparent;
+    border-radius:4px;padding:1px 2px;margin-left:-2px;margin-right:-2px;
+  }
+  #sb-calweather .cw-ev.tap:active,#sb-calweather .cw-ev.tap.pressing{
+    background:rgba(255,120,120,.28);opacity:1;
+  }
   #sb-calweather .cw-ev .t{opacity:.55;font-weight:700;margin-right:2px}
   #sb-calweather .cw-ev.empty{display:none!important}
   #sb-calweather .cw-evs{
@@ -838,6 +845,56 @@
   }
   #cw-add-modal .cw-add-sheet .msg.warn{color:#ffc978}
   #cw-add-modal .cw-add-sheet .msg.ok{color:#9dffa8}
+  /* Delete confirm — same shell as add modal */
+  #cw-del-modal{
+    position:fixed;inset:0;z-index:2147483641;
+    display:none;align-items:center;justify-content:center;
+    pointer-events:auto!important;touch-action:auto;
+    padding:max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom));
+    box-sizing:border-box;
+  }
+  #cw-del-modal.on{display:flex!important}
+  #cw-del-modal .cw-del-backdrop{
+    position:absolute;inset:0;background:rgba(0,0,0,.55);
+    backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);
+    pointer-events:auto;cursor:pointer;
+  }
+  #cw-del-modal .cw-del-sheet{
+    position:relative;z-index:1;
+    display:flex;flex-direction:column;gap:8px;
+    width:min(420px,94vw);max-height:min(86vh,560px);overflow:auto;
+    margin:0;padding:16px 14px 14px;
+    background:rgba(12,14,20,.94);border-radius:14px;
+    border:1px solid rgba(255,255,255,.22);
+    box-shadow:0 18px 48px rgba(0,0,0,.55);
+    text-align:left;color:#fff;
+    font:600 15px/1.25 -apple-system,BlinkMacSystemFont,sans-serif;
+    pointer-events:auto!important;touch-action:manipulation;
+    text-shadow:none;
+  }
+  #cw-del-modal .cw-del-sheet h3{
+    margin:0 0 2px;font:800 17px/1.2 -apple-system,sans-serif;letter-spacing:.02em;
+  }
+  #cw-del-modal .cw-del-summary{
+    margin:0;padding:10px 11px;border-radius:8px;
+    background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);
+    font:700 14px/1.35 -apple-system,sans-serif;
+  }
+  #cw-del-modal .cw-del-summary .when{display:block;margin-top:4px;opacity:.7;font-weight:600;font-size:13px}
+  #cw-del-modal .cw-del-sheet .field-hint{opacity:.55;font:500 12px/1.3 -apple-system,sans-serif;margin:0}
+  #cw-del-modal .cw-del-sheet .actions{
+    display:flex;gap:8px;justify-content:flex-end;margin-top:4px;
+  }
+  #cw-del-modal .cw-del-sheet button{
+    appearance:none;border:0;border-radius:8px;padding:10px 14px;cursor:pointer;
+    font:800 13px/1 -apple-system,sans-serif;color:#fff;
+    background:rgba(255,255,255,.18);pointer-events:auto;
+  }
+  #cw-del-modal .cw-del-sheet button.danger{background:rgba(220,70,70,.78)}
+  #cw-del-modal .cw-del-sheet button.danger:disabled{opacity:.55;cursor:wait}
+  #cw-del-modal .cw-del-sheet .msg{opacity:.75;min-height:1.1em;font-size:13px}
+  #cw-del-modal .cw-del-sheet .msg.warn{color:#ffc978}
+  #cw-del-modal .cw-del-sheet .msg.ok{color:#9dffa8}
   #sb-calweather .cw-status{
     margin:2px 0 0;padding:0 2px;
     font:600 calc(var(--cw-font,18px) * 0.48)/1.25 -apple-system,sans-serif;
@@ -989,7 +1046,7 @@
     <div class="cw-add-backdrop" id="cw-add-backdrop" aria-hidden="true"></div>
     <div class="cw-add-sheet" role="dialog" aria-labelledby="cw-add-heading" aria-modal="true">
       <h3 id="cw-add-heading">Add to House calendar</h3>
-      <p class="field-hint">Writes stay client-side / queued until HA calendar API is stable. Typing is preserved while the week refreshes.</p>
+      <p class="field-hint">Creates on the House calendar via HA webhook. Typing is preserved while the week refreshes.</p>
       <div class="field">
         <label for="cw-title">Event title</label>
         <input id="cw-title" type="text" maxlength="120" placeholder="e.g. Soccer practice" autocomplete="off" enterkeyhint="done"/>
@@ -1005,6 +1062,17 @@
       <div class="msg" id="cw-msg" role="status" aria-live="polite"></div>
     </div>
   </div>
+  <div id="cw-del-modal" aria-hidden="true">
+    <div class="cw-del-backdrop" id="cw-del-backdrop" aria-hidden="true"></div>
+    <div class="cw-del-sheet" role="dialog" aria-labelledby="cw-del-heading" aria-modal="true">
+      <h3 id="cw-del-heading">Delete event?</h3>
+      <p class="cw-del-summary" id="cw-del-summary"></p>
+      <p class="field-hint">Removes this event from the House calendar. Edit is not supported from the frame.</p>
+      <div class="actions"><button type="button" id="cw-del-cancel">Cancel</button>
+      <button type="button" class="danger" id="cw-del-confirm">Delete</button></div>
+      <div class="msg" id="cw-del-msg" role="status" aria-live="polite"></div>
+    </div>
+  </div>
   <div id="sb-week" aria-hidden="false">
     <div class="wk-body"></div>
     <button type="button" class="hud-resize-w" data-resize="w" aria-label="Stretch calendar width" tabindex="-1"></button>
@@ -1016,7 +1084,7 @@
 
 <script>
 /* Identifiable deploy build — bump Lovelace iframe ?v= separately on HA. */
-const FRAME_BUILD = '20260912-ui2';
+const FRAME_BUILD = '20260912-ui3';
 try { window.FRAME_BUILD = FRAME_BUILD; } catch (e) {}
 const FALLBACK = [
   "/local/family-album/filler_forest.jpg",
@@ -2610,7 +2678,7 @@ function bindHoldDrag(el, storageKey, kind){
     if (ev.target && ev.target.closest && (ev.target.closest('#sb-exit') || ev.target.closest('#sb-fs') || ev.target.closest('#sb-fit'))) return;
     // Cal+weather: swipe on day strip / form / + — do not hold-drag the whole card (header/now still drags).
     if (kind === 'calwx' && ev.target && ev.target.closest &&
-        ev.target.closest('.cw-days, .cw-day, .cw-evs, .cw-form, .cw-add, .cw-hint, input, button.cw-add, .cw-toolbar, #cw-add-modal, .cw-add-sheet')) {
+        ev.target.closest('.cw-days, .cw-day, .cw-evs, .cw-ev, .cw-form, .cw-add, .cw-hint, input, button.cw-add, .cw-toolbar, #cw-add-modal, .cw-add-sheet, #cw-del-modal, .cw-del-sheet')) {
       return;
     }
     if (gestureLockBusyOther(kind)) return;
@@ -2956,6 +3024,8 @@ let CALWEATHER = {
   weekData: null,
   weekOffset: 0,
   formOpen: false,
+  delOpen: false,
+  _delTarget: null,
   feed: null,
   swipeBound: false,
   weekStatus: 'loading', // loading | ok | empty | error
@@ -2963,6 +3033,7 @@ let CALWEATHER = {
 };
 let _weekCache = null;
 const CAL_EVENT_WEBHOOK = 'fa_cal_evt_7c3a91e2b4d06f18a9e55c21';
+const CAL_DELETE_WEBHOOK = 'fa_cal_del_7c3a91e2b4d06f18a9e55c21';
 const HOUSE_CAL_ID = '66f073dac1e425814071e46d54f8f167bfbba00bcadcfa267bbbfe2184bc5aa1@group.calendar.google.com';
 
 function ensureCalwxHandles(el){
@@ -3361,6 +3432,270 @@ function bindCwAddModalOnce(){
   }
 }
 
+
+function escCwAttr(s){
+  return String(s == null ? '' : s)
+    .replace(/&/g,'&amp;')
+    .replace(/"/g,'&quot;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;');
+}
+
+function eventUid(ev){
+  if (!ev || typeof ev !== 'object') return '';
+  return String(ev.uid || ev.UID || ev.id || '').trim();
+}
+
+function eventRecurrenceId(ev){
+  if (!ev || typeof ev !== 'object') return '';
+  const v = (ev.recurrence_id != null) ? ev.recurrence_id
+    : ((ev.recurrenceId != null) ? ev.recurrenceId
+    : ((ev.recurrenceID != null) ? ev.recurrenceID : ''));
+  return String(v || '').trim();
+}
+
+function sleepMs(ms){
+  return new Promise(function(resolve){ setTimeout(resolve, ms); });
+}
+
+function feedHasUid(data, uid){
+  uid = String(uid || '').trim();
+  if (!uid || !data || typeof data !== 'object') return false;
+  const matchEv = function(ev){
+    if (!ev || typeof ev !== 'object') return false;
+    return eventUid(ev) === uid;
+  };
+  const scanDays = function(days){
+    if (!Array.isArray(days)) return false;
+    for (let i = 0; i < days.length; i++) {
+      const d = days[i];
+      if (!d || !Array.isArray(d.events)) continue;
+      for (let j = 0; j < d.events.length; j++) {
+        if (matchEv(d.events[j])) return true;
+      }
+    }
+    return false;
+  };
+  if (scanDays(data.days)) return true;
+  if (Array.isArray(data.weeks)) {
+    for (let w = 0; w < data.weeks.length; w++) {
+      if (data.weeks[w] && scanDays(data.weeks[w].days)) return true;
+    }
+  }
+  return false;
+}
+
+function deleteStatusLooksOk(j){
+  if (!j || typeof j !== 'object' || Array.isArray(j)) return null;
+  if (j.success === true || j.ok === true || j.deleted === true || j.delete_ok === true) return true;
+  if (j.success === false || j.ok === false || j.deleted === false || j.delete_ok === false) return false;
+  if (typeof j.status === 'string') {
+    const s = j.status.toLowerCase();
+    if (s === 'success' || s === 'ok' || s === 'deleted' || s === 'true') return true;
+    if (s === 'error' || s === 'fail' || s === 'failed' || s === 'false') return false;
+  }
+  if (j.result === true || j.result === 'success' || j.result === 'ok') return true;
+  if (j.result === false || j.result === 'error' || j.result === 'failed') return false;
+  if (j.error || j.errmsg || j.message_error) return false;
+  return null;
+}
+
+async function fetchLastDeleteStatus(){
+  try {
+    const r = await fetch('/local/family-album/last_delete_status.json?v=' + Date.now(), {cache:'no-store'});
+    if (!r.ok) return null;
+    const raw = await r.text();
+    try { return JSON.parse(raw); } catch (e) { return null; }
+  } catch (e2) { return null; }
+}
+
+async function verifyCalwxDelete(uid){
+  uid = String(uid || '').trim();
+  if (!uid) return {ok:false, error:'Missing uid'};
+  let lastErr = 'Could not verify delete';
+  for (let attempt = 0; attempt < 6; attempt++) {
+    if (attempt) await sleepMs(350 + attempt * 180);
+    const st = await fetchLastDeleteStatus();
+    const look = deleteStatusLooksOk(st);
+    if (look === true) {
+      try { await loadWeek(); } catch (e) {}
+      return {ok:true, via:'last_delete_status'};
+    }
+    if (look === false) {
+      lastErr = (st && (st.error || st.message || st.detail)) || 'Delete reported failure';
+      // still fall through once to week.json in case status is stale from a prior attempt
+    }
+    try {
+      const r = await fetch('/local/family-album/week.json?v=' + Date.now(), {cache:'no-store'});
+      if (r.ok) {
+        const raw = await r.text();
+        let data = null;
+        try { data = JSON.parse(raw); } catch (e3) { data = null; }
+        if (data && typeof data === 'object' && !feedHasUid(data, uid)) {
+          try {
+            CALWEATHER.feed = data;
+            CALWEATHER.weekError = '';
+            CALWEATHER.weekStatus = weekFeedHasAnyEvents(data) ? 'ok' : 'empty';
+            renderWeek(data);
+          } catch (e4) {
+            try { await loadWeek(); } catch (e5) {}
+          }
+          return {ok:true, via:'week.json'};
+        }
+        if (data && feedHasUid(data, uid)) lastErr = 'Event still in week.json';
+      }
+    } catch (e6) {
+      lastErr = 'Could not re-check week.json';
+    }
+    if (look === false && attempt >= 2) break;
+  }
+  return {ok:false, error:String(lastErr || 'Delete not confirmed')};
+}
+
+function setCwDelMsg(text, kind){
+  const msg = document.getElementById('cw-del-msg');
+  if (!msg) return;
+  msg.className = 'msg' + (kind ? (' ' + kind) : '');
+  msg.textContent = text || '';
+}
+
+function setCwWeekStatusLine(text, isErr){
+  const el = document.getElementById('cw-week-status');
+  if (!el) return;
+  if (!text) {
+    el.hidden = true;
+    el.textContent = '';
+    el.className = 'cw-status';
+    return;
+  }
+  el.hidden = false;
+  el.className = 'cw-status' + (isErr ? ' err' : '');
+  el.textContent = text;
+}
+
+function syncCwDelModal(){
+  const modal = document.getElementById('cw-del-modal');
+  if (!modal) return;
+  const on = !!CALWEATHER.delOpen;
+  modal.classList.toggle('on', on);
+  modal.setAttribute('aria-hidden', on ? 'false' : 'true');
+}
+
+function closeCalwxDelete(){
+  CALWEATHER.delOpen = false;
+  CALWEATHER._delTarget = null;
+  const btn = document.getElementById('cw-del-confirm');
+  if (btn) btn.disabled = false;
+  syncCwDelModal();
+}
+
+function openCalwxDelete(target){
+  target = target || {};
+  if (!target.uid) {
+    try { showFsToast('Cannot delete — missing event uid'); } catch (e) {}
+    setCwWeekStatusLine('Cannot delete — missing event uid', true);
+    return;
+  }
+  CALWEATHER.delOpen = true;
+  CALWEATHER._delTarget = {
+    uid: String(target.uid || ''),
+    recurrence_id: String(target.recurrence_id || ''),
+    title: String(target.title || 'Event'),
+    date: String(target.date || ''),
+    time: String(target.time || '')
+  };
+  bindCwDelModalOnce();
+  const sum = document.getElementById('cw-del-summary');
+  if (sum) {
+    const whenBits = [];
+    if (CALWEATHER._delTarget.date) whenBits.push(CALWEATHER._delTarget.date);
+    if (CALWEATHER._delTarget.time) whenBits.push(CALWEATHER._delTarget.time);
+    sum.innerHTML = escCwAttr(CALWEATHER._delTarget.title) +
+      (whenBits.length ? '<span class="when">' + escCwAttr(whenBits.join(' · ')) + '</span>' : '');
+  }
+  setCwDelMsg('This cannot be undone from the frame.', '');
+  const btn = document.getElementById('cw-del-confirm');
+  if (btn) btn.disabled = false;
+  syncCwDelModal();
+}
+
+function bindCwDelModalOnce(){
+  const modal = document.getElementById('cw-del-modal');
+  if (!modal || modal._cwBound) return;
+  modal._cwBound = true;
+  const backdrop = document.getElementById('cw-del-backdrop');
+  if (backdrop) backdrop.addEventListener('click', function(ev){
+    closeCalwxDelete();
+    try { ev.stopPropagation(); } catch (e) {}
+  });
+  const cancel = document.getElementById('cw-del-cancel');
+  if (cancel) cancel.addEventListener('click', function(ev){
+    closeCalwxDelete();
+    try { ev.stopPropagation(); ev.preventDefault(); } catch (e) {}
+  });
+  const confirm = document.getElementById('cw-del-confirm');
+  if (confirm) confirm.addEventListener('click', async function(ev){
+    try { ev.stopPropagation(); ev.preventDefault(); } catch (e) {}
+    const target = CALWEATHER._delTarget || {};
+    if (!target.uid) {
+      setCwDelMsg('Missing event uid', 'warn');
+      return;
+    }
+    confirm.disabled = true;
+    setCwDelMsg('Deleting…', '');
+    setCwWeekStatusLine('Deleting…', false);
+    const res = await submitCalwxDelete(target.uid, target.recurrence_id);
+    if (res.ok) {
+      setCwDelMsg('Deleted', 'ok');
+      const note = res.via === 'last_delete_status'
+        ? 'Deleted (verified via status)'
+        : 'Deleted (verified — gone from week)';
+      try { showFsToast(note); } catch (e2) {}
+      setCwWeekStatusLine(note, false);
+      setTimeout(closeCalwxDelete, 500);
+    } else {
+      const err = res.error || 'Delete failed';
+      setCwDelMsg(err, 'warn');
+      try { showFsToast(err); } catch (e3) {}
+      setCwWeekStatusLine(err, true);
+      confirm.disabled = false;
+    }
+  });
+  const sheet = modal.querySelector('.cw-del-sheet');
+  if (sheet) {
+    ['pointerdown','touchstart','click','keydown','keyup','keypress'].forEach(function(evt){
+      sheet.addEventListener(evt, function(ev){ try { ev.stopPropagation(); } catch (e) {} }, true);
+    });
+  }
+}
+
+async function submitCalwxDelete(uid, recurrenceId){
+  uid = String(uid || '').trim();
+  if (!uid) return {ok:false, error:'Missing event uid'};
+  const body = { uid: uid };
+  const rid = String(recurrenceId || '').trim();
+  if (rid) body.recurrence_id = rid;
+  let postReached = false;
+  let postOk = false;
+  try {
+    const r = await fetch('/api/webhook/' + CAL_DELETE_WEBHOOK, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(body),
+      cache:'no-store'
+    });
+    postReached = true;
+    postOk = !!(r.ok || r.status === 200 || r.status === 201);
+  } catch (e) {
+    return {ok:false, error:'Delete request failed (network)'};
+  }
+  // Never trust HTTP 200 alone — verify status file and/or week.json.
+  const ver = await verifyCalwxDelete(uid);
+  if (ver.ok) return ver;
+  if (!postOk) return {ok:false, error: ver.error || 'Delete webhook rejected'};
+  return {ok:false, error: ver.error || 'Delete not confirmed'};
+}
+
 function openCalwxForm(preDate){
   CALWEATHER.formOpen = true;
   if (preDate) CALWEATHER._formDate = preDate;
@@ -3470,9 +3805,20 @@ function renderCalWeather(){
     const ic = wx ? fcIcon(wx.condition) : '';
     const events = (d.events || []).slice(0, maxEv || 0);
     const slots = events.map(function(ev){
-      const title = (ev.title || ev.summary || 'Event').replace(/</g,'&lt;');
+      const rawTitle = ev.title || ev.summary || 'Event';
+      const title = String(rawTitle).replace(/</g,'&lt;');
       const tm = fmtEventTime(ev);
-      return '<span class="cw-ev">' + (tm && tm !== 'All day' ? '<span class="t">' + tm + '</span>' : '') + title + '</span>';
+      const uid = eventUid(ev);
+      const rid = eventRecurrenceId(ev);
+      const tap = uid ? ' tap' : '';
+      const attrs = ' class="cw-ev' + tap + '"' +
+        (uid ? ' data-uid="' + escCwAttr(uid) + '"' : '') +
+        (rid ? ' data-recurrence-id="' + escCwAttr(rid) + '"' : '') +
+        ' data-title="' + escCwAttr(rawTitle) + '"' +
+        ' data-date="' + escCwAttr(d.date || '') + '"' +
+        ' data-time="' + escCwAttr(tm || '') + '"' +
+        (uid ? ' role="button" tabindex="0" title="Tap to delete"' : '');
+      return '<span' + attrs + '>' + (tm && tm !== 'All day' ? '<span class="t">' + tm + '</span>' : '') + title + '</span>';
     });
     const dow = String(d.dow || d.weekday || '').slice(0,3);
     return '<div class="cw-day' + (isToday ? ' today' : '') + (i === CALWEATHER.selected ? ' sel' : '') + '" data-i="' + i + '" data-date="' + (d.date || '') + '">' +
@@ -3516,6 +3862,7 @@ function renderCalWeather(){
   bindCalwxStripSwipe(daysNode);
   body.querySelectorAll('.cw-day').forEach(function(node){
     node.addEventListener('click', function(ev){
+      if (ev.target && ev.target.closest && ev.target.closest('.cw-ev')) return;
       const i = parseInt(node.getAttribute('data-i') || '0', 10) || 0;
       CALWEATHER.selected = i;
       CALWEATHER._formDate = node.getAttribute('data-date') || '';
@@ -3523,6 +3870,24 @@ function renderCalWeather(){
       try { ev.stopPropagation(); } catch (e) {}
     }, {passive:true});
   });
+  body.querySelectorAll('.cw-ev.tap').forEach(function(evNode){
+    const openFrom = function(ev){
+      try { ev.stopPropagation(); ev.preventDefault(); } catch (e) {}
+      openCalwxDelete({
+        uid: evNode.getAttribute('data-uid') || '',
+        recurrence_id: evNode.getAttribute('data-recurrence-id') || '',
+        title: evNode.getAttribute('data-title') || 'Event',
+        date: evNode.getAttribute('data-date') || '',
+        time: evNode.getAttribute('data-time') || ''
+      });
+    };
+    evNode.addEventListener('click', openFrom);
+    evNode.addEventListener('keydown', function(ev){
+      if (ev.key === 'Enter' || ev.key === ' ') openFrom(ev);
+    });
+  });
+  bindCwDelModalOnce();
+  syncCwDelModal();
   const hintEl = body.querySelector('#cw-thisweek');
   if (hintEl) hintEl.addEventListener('click', function(ev){
     resetCalwxThisWeek();

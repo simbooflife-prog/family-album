@@ -9,7 +9,7 @@ Internal build id lives in `frame.html` as `FRAME_BUILD` (also in the HTML comme
 
 1. Edit in git (`main` on this repo). Commit + push.
 2. Copy changed files **only** to SOT: `/homeassistant/www/family-album`.
-3. Bump every Lovelace iframe `?v=` (Overview + digital-frame). Suggested next: match `FRAME_BUILD` (currently `20260912-ui2`).
+3. Bump every Lovelace iframe `?v=` (Overview + digital-frame). Suggested next: match `FRAME_BUILD` (currently `20260912-ui3`).
 4. Verify checksums (see below). If `/config/www/family-album` still exists, md5 **both** paths — they must match (symlink).
 5. Hard refresh the frame (tablet / companion app / browser).
 
@@ -51,11 +51,22 @@ HA and tablets cache `frame.html` hard. Changing `FRAME_BUILD` inside the file i
 
 - Overview iframe: bump `?v=`
 - digital-frame dashboard iframe: bump `?v=`
-- Example: `/local/family-album/frame.html?v=20260912-ui2`
+- Example: `/local/family-album/frame.html?v=20260912-ui3`
+
+## Calendar webhooks (create + delete)
+
+Same-origin from the frame iframe on HA:
+
+| Action | Method | Path | Body |
+| --- | --- | --- | --- |
+| Create | `POST` | `/api/webhook/fa_cal_evt_7c3a91e2b4d06f18a9e55c21` | `{ title, date, time?, duration_minutes, calendar_id? }` |
+| Delete | `POST` | `/api/webhook/fa_cal_del_7c3a91e2b4d06f18a9e55c21` | `{ uid, recurrence_id? }` |
+
+**Delete verification (do not trust HTTP 200 alone):** after the delete POST, the frame checks `/local/family-album/last_delete_status.json` (defensive `success` / `ok` / `deleted` / `status` fields) **and/or** re-fetches `/local/family-album/week.json` until the event `uid` is gone (short retry). UI only updates after verification. **Edit is not supported** (no HA update webhook).
 
 ## Do not
 
 - Deploy or edit `/config/www/family-album` as its own copy.
 - Skip the `?v=` bump.
 - Commit family photos (`*.jpg` / `*.jpeg` / `*.png` / `*.heic` under `photos/` or repo root).
-- Wire new live create/edit/delete HA webhooks until the calendar contract is stable.
+- Implement calendar **edit** from the frame (no HA update support yet).
