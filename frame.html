@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black"/>
 <title>Family Album Frame</title>
-<!-- frame FRAME_BUILD=20260912-ui3 v=20260912-ui3 (bump Lovelace ?v= on HA deploy) square-stage 1:1 photo-only-zoom hud-fixed gesture-lock layout-guides-edit-only snap-align hud-clock no-pill drag-clock calweather-combined swipe-weeks add-event delete-event week.json forecast.json preserve-add-modal-input -->
+<!-- frame FRAME_BUILD=20260912-ui3fix1 v=20260912-ui3fix1 (bump Lovelace ?v= on HA deploy) square-stage 1:1 photo-only-zoom hud-fixed gesture-lock layout-guides-edit-only snap-align hud-clock no-pill drag-clock calweather-combined swipe-weeks add-event delete-event week.json forecast.json preserve-add-modal-input overview-layout-lock gear-edit-mode save-touch-fix -->
 <style>
   html,body{margin:0;height:100%;background:#0a1220;overflow:hidden;touch-action:manipulation;-webkit-user-select:none;user-select:none}
   html.standby-page,html.standby-page body{background:#000}
@@ -791,6 +791,72 @@
   #sb-calweather .cw-days.swiping{opacity:.92}
   /* Inline form stub kept hidden; real add-event UI is #cw-add-modal (topmost). */
   #sb-calweather .cw-form{display:none!important}
+
+  /* Overview mini / non-edit: lock HUD drag/resize */
+  html.layout-locked #sb-clock,
+  html.layout-locked #sb-week,
+  html.layout-locked #sb-forecast,
+  html.layout-locked #sb-calweather{cursor:default!important}
+  html.layout-locked #sb-clock .hud-resize,
+  html.layout-locked #sb-clock .hud-resize-e,
+  html.layout-locked #sb-clock .hud-resize-w,
+  html.layout-locked #sb-clock .hud-resize-s,
+  html.layout-locked #sb-clock .hud-resize-se,
+  html.layout-locked #sb-week .hud-resize-e,
+  html.layout-locked #sb-week .hud-resize-w,
+  html.layout-locked #sb-week .hud-resize-s,
+  html.layout-locked #sb-week .hud-resize-se,
+  html.layout-locked #sb-forecast .hud-resize-e,
+  html.layout-locked #sb-forecast .hud-resize-w,
+  html.layout-locked #sb-forecast .hud-resize-s,
+  html.layout-locked #sb-forecast .hud-resize-se,
+  html.layout-locked #sb-calweather .hud-resize-e,
+  html.layout-locked #sb-calweather .hud-resize-w,
+  html.layout-locked #sb-calweather .hud-resize-s,
+  html.layout-locked #sb-calweather .hud-resize-se{
+    display:none!important;pointer-events:none!important;
+  }
+  html.layout-locked #sb-clock.editing,
+  html.layout-locked #sb-week.editing,
+  html.layout-locked #sb-forecast.editing,
+  html.layout-locked #sb-calweather.editing{outline:none!important}
+  /* Settings gear — full digital-frame only; toggles layout edit mode */
+  #sb-hud-gear{
+    position:absolute;
+    top:max(10px,env(safe-area-inset-top));
+    left:max(12px,env(safe-area-inset-left));
+    z-index:20;
+    display:none;
+    pointer-events:auto!important;
+    touch-action:manipulation;
+    width:44px;height:44px;border-radius:22px;border:0;cursor:pointer;
+    background:rgba(0,0,0,.48);color:#fff;
+    font:600 22px/44px sans-serif;text-align:center;padding:0;
+    backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+    box-shadow:0 2px 14px rgba(0,0,0,.35);
+    -webkit-tap-highlight-color:transparent;
+  }
+  html.full-frame #sb-hud-gear{display:block}
+  html.overview-mini #sb-hud-gear{display:none!important}
+  #sb-hud-gear:active{background:rgba(255,255,255,.22)}
+  #sb-hud-gear.on,#sb-hud-gear[aria-pressed="true"]{
+    background:rgba(80,160,255,.72);
+    box-shadow:0 0 0 2px rgba(120,180,255,.55),0 2px 14px rgba(0,0,0,.4);
+  }
+  #sb-hud-gear .gear-label{display:none;font:700 11px/1 -apple-system,sans-serif;letter-spacing:.04em}
+  #sb-hud-gear.on .gear-ico{display:none}
+  #sb-hud-gear.on .gear-label{display:inline}
+  #sb-hud-edit-banner{
+    position:absolute;left:50%;top:max(12px,env(safe-area-inset-top));
+    transform:translateX(-50%);
+    z-index:19;display:none;pointer-events:none;
+    padding:6px 12px;border-radius:999px;
+    background:rgba(80,160,255,.78);color:#fff;
+    font:700 12px/1.2 -apple-system,sans-serif;letter-spacing:.03em;
+    box-shadow:0 2px 12px rgba(0,0,0,.35);
+  }
+  html.hud-edit #sb-hud-edit-banner{display:block}
+
   #cw-add-modal{
     position:fixed;inset:0;z-index:2147483640;
     display:none;align-items:center;justify-content:center;
@@ -1007,7 +1073,7 @@
       <div id="sb-chrome">
         <button id="sb-exit" type="button" aria-label="Exit standby">✕</button>
         <button id="sb-fit" type="button" aria-label="Fit square stage (CSS contain); reset photo zoom">Fit</button>
-        <div id="sb-hint">pinch = photo zoom · overlays stay put · handles resize widgets · Fit = square contain · Exit</div>
+        <div id="sb-hint">pinch = photo zoom · ⚙ = edit layout · Fit = square contain · Exit</div>
       </div>
       <div id="sb-orig-hint" aria-hidden="true">Double-tap for frame crop</div>
       <div id="sb-pause">❚❚</div>
@@ -1018,6 +1084,11 @@
 </div>
 <!-- HUD overlay: outside Ken Burns; JS reparents into #standby / fullscreen -->
 <div id="sb-hud">
+  <button type="button" id="sb-hud-gear" aria-label="Layout settings" aria-pressed="false" title="Edit layout">
+    <span class="gear-ico" aria-hidden="true">⚙</span>
+    <span class="gear-label">Done</span>
+  </button>
+  <div id="sb-hud-edit-banner" aria-live="polite">Layout edit — drag overlays · tap Done when finished</div>
   <div id="snap-guides" aria-hidden="true"></div>
   <div id="sb-calweather" aria-hidden="true" title="Calendar & weather">
     <div class="cw-body"></div>
@@ -1084,7 +1155,7 @@
 
 <script>
 /* Identifiable deploy build — bump Lovelace iframe ?v= separately on HA. */
-const FRAME_BUILD = '20260912-ui3';
+const FRAME_BUILD = '20260912-ui3fix1';
 try { window.FRAME_BUILD = FRAME_BUILD; } catch (e) {}
 const FALLBACK = [
   "/local/family-album/filler_forest.jpg",
@@ -1113,6 +1184,79 @@ const STANDALONE = STANDALONE_REQUESTED && !STANDALONE_BLOCKED && !recentlyExite
 if (HA_VIEW) { try { document.documentElement.classList.add('ha-view'); } catch (e) {} }
 if (STANDALONE_REQUESTED && !STANDALONE_BLOCKED) { try { document.documentElement.classList.add('ha-view'); } catch (e) {} }
 if (HA_VIEW && STANDALONE_REQUESTED) { try { document.documentElement.classList.add('standby-page'); } catch (e) {} }
+/* Mode detection:
+   - Overview mini iframe: no ?standby=1 → always layout-locked (no drag/resize)
+   - Full digital-frame: ?standby=1 (often + ?ha=1) → gear toggles edit mode (locked by default) */
+const IS_FULL_FRAME = !!(STANDALONE_REQUESTED && !STANDALONE_BLOCKED);
+const IS_OVERVIEW_MINI = !IS_FULL_FRAME;
+let hudEditMode = false;
+try {
+  document.documentElement.classList.toggle('full-frame', IS_FULL_FRAME);
+  document.documentElement.classList.toggle('overview-mini', IS_OVERVIEW_MINI);
+  document.documentElement.classList.add('layout-locked');
+  document.documentElement.classList.remove('hud-edit');
+} catch (e) {}
+function hudLayoutEditAllowed(){
+  if (IS_OVERVIEW_MINI || !IS_FULL_FRAME) return false;
+  return !!hudEditMode;
+}
+function syncHudEditChrome(){
+  const gear = document.getElementById('sb-hud-gear');
+  const locked = !hudLayoutEditAllowed();
+  try {
+    document.documentElement.classList.toggle('layout-locked', locked);
+    document.documentElement.classList.toggle('hud-edit', !locked && IS_FULL_FRAME);
+  } catch (e) {}
+  if (gear) {
+    gear.setAttribute('aria-pressed', hudEditMode ? 'true' : 'false');
+    gear.classList.toggle('on', !!hudEditMode);
+    gear.setAttribute('aria-label', hudEditMode ? 'Done editing layout' : 'Layout settings');
+    gear.title = hudEditMode ? 'Done' : 'Edit layout';
+  }
+  if (!hudEditMode) {
+    ['sb-clock','sb-week','sb-forecast','sb-calweather'].forEach(function(id){
+      const el = document.getElementById(id);
+      if (el) el.classList.remove('editing','dragging','resizing');
+    });
+    try { setGuidesEditing(false, 0); } catch (e2) {}
+  }
+}
+function setHudEditMode(on){
+  if (!IS_FULL_FRAME) { hudEditMode = false; syncHudEditChrome(); return; }
+  hudEditMode = !!on;
+  syncHudEditChrome();
+  try {
+    if (hudEditMode) showFsToast('Layout edit on — drag / resize overlays');
+    else showFsToast('Layout locked');
+  } catch (e) {}
+}
+function toggleHudEditMode(){
+  setHudEditMode(!hudEditMode);
+}
+function bindHudGearOnce(){
+  const gear = document.getElementById('sb-hud-gear');
+  if (!gear || gear._bound) return;
+  gear._bound = true;
+  const activate = function(ev){
+    try { ev.preventDefault(); ev.stopPropagation(); } catch (e) {}
+    if (!IS_FULL_FRAME) return;
+    toggleHudEditMode();
+  };
+  let last = 0;
+  const wrap = function(ev){
+    const now = Date.now();
+    if (now - last < 400) return;
+    last = now;
+    activate(ev);
+  };
+  gear.addEventListener('click', wrap);
+  gear.addEventListener('pointerup', function(ev){
+    if (ev.pointerType === 'mouse') return;
+    wrap(ev);
+  });
+  syncHudEditChrome();
+}
+
 let MOTION = {
   motion: qp.get('motion') !== '0' && qp.get('motion') !== 'off',
   seconds: Math.max(8, Math.min(40, parseFloat(qp.get('secs') || qp.get('seconds') || '16') || 16)),
@@ -2675,7 +2819,8 @@ function bindHoldDrag(el, storageKey, kind){
   };
 
   const onDown = (ev) => {
-    if (ev.target && ev.target.closest && (ev.target.closest('#sb-exit') || ev.target.closest('#sb-fs') || ev.target.closest('#sb-fit'))) return;
+    if (typeof hudLayoutEditAllowed === 'function' && !hudLayoutEditAllowed()) return;
+    if (ev.target && ev.target.closest && (ev.target.closest('#sb-exit') || ev.target.closest('#sb-fs') || ev.target.closest('#sb-fit') || ev.target.closest('#sb-hud-gear'))) return;
     // Cal+weather: swipe on day strip / form / + — do not hold-drag the whole card (header/now still drags).
     if (kind === 'calwx' && ev.target && ev.target.closest &&
         ev.target.closest('.cw-days, .cw-day, .cw-evs, .cw-ev, .cw-form, .cw-add, .cw-hint, input, button.cw-add, .cw-toolbar, #cw-add-modal, .cw-add-sheet, #cw-del-modal, .cw-del-sheet')) {
@@ -3009,6 +3154,8 @@ function startWeekDrag(){
 function startClockDrag(){
   bindHoldDrag(document.getElementById('sb-clock'), CLOCK_POS_KEY, 'clock');
 }
+try { bindHudGearOnce(); } catch (e) {}
+
 
 
 /* ---- combined calendar + weather #sb-calweather (week.json + forecast.json) ---- */
@@ -3383,6 +3530,32 @@ function syncCwAddModal(opts){
   }
 }
 
+function setCwAddMsg(text, kind){
+  const msg = document.getElementById('cw-msg');
+  if (!msg) return;
+  msg.className = 'msg' + (kind ? (' ' + kind) : '');
+  msg.textContent = text || '';
+}
+
+function bindCwActivate(el, handler){
+  if (!el || el._cwActivateBound) return;
+  el._cwActivateBound = true;
+  let last = 0;
+  const run = function(ev){
+    try { ev.preventDefault(); ev.stopPropagation(); } catch (e) {}
+    const now = Date.now();
+    if (now - last < 450) return;
+    last = now;
+    handler(ev);
+  };
+  el.addEventListener('click', run);
+  el.addEventListener('pointerup', function(ev){
+    if (ev.pointerType === 'mouse') return;
+    run(ev);
+  });
+  el.addEventListener('touchend', function(ev){ run(ev); }, {passive:false});
+}
+
 function bindCwAddModalOnce(){
   const modal = document.getElementById('cw-add-modal');
   if (!modal || modal._cwBound) return;
@@ -3393,45 +3566,48 @@ function bindCwAddModalOnce(){
     try { ev.stopPropagation(); } catch (e) {}
   });
   const cancel = document.getElementById('cw-cancel');
-  if (cancel) cancel.addEventListener('click', function(ev){
-    closeCalwxForm();
-    try { ev.stopPropagation(); ev.preventDefault(); } catch (e) {}
-  });
+  if (cancel) bindCwActivate(cancel, function(){ closeCalwxForm(); });
   const save = document.getElementById('cw-save');
-  if (save) save.addEventListener('click', async function(ev){
-    try { ev.stopPropagation(); ev.preventDefault(); } catch (e) {}
+  if (save) bindCwActivate(save, async function(){
     const title = (document.getElementById('cw-title') || {}).value || '';
     const date = (document.getElementById('cw-date') || {}).value || '';
     const time = (document.getElementById('cw-time') || {}).value || '';
-    const msg = document.getElementById('cw-msg');
-    if (msg) msg.textContent = 'Saving…';
-    const res = await submitCalwxEvent(title, date, time);
-    if (msg) {
-      if (res.ok) {
-        msg.className = 'msg ok';
-        msg.textContent = res.via === 'local_queue'
-          ? 'Queued locally — HA write API not wired yet'
-          : 'Saved';
-      } else {
-        msg.className = 'msg warn';
-        msg.textContent = res.error === 'need_fields' || !String(title||'').trim() || !String(date||'').trim()
-          ? 'Need an event title and a date'
-          : (res.error || 'Could not save');
-      }
+    setCwAddMsg('Saving…', '');
+    try { setCwWeekStatusLine('Saving…', false); } catch (e0) {}
+    save.disabled = true;
+    let res;
+    try {
+      res = await submitCalwxEvent(title, date, time);
+    } catch (err) {
+      res = {ok:false, error:(err && err.message) ? err.message : 'Save failed'};
     }
-    if (res.ok && res.via !== 'local_queue') {
-      setTimeout(closeCalwxForm, 600);
+    save.disabled = false;
+    if (res && res.ok) {
+      const okText = res.via === 'local_queue'
+        ? (res.note || 'Queued locally — HA webhook unreachable')
+        : 'Saved';
+      setCwAddMsg(okText, 'ok');
+      try { setCwWeekStatusLine(okText, false); } catch (e1) {}
+      if (res.via !== 'local_queue') setTimeout(closeCalwxForm, 600);
+    } else {
+      const need = !String(title||'').trim() || !String(date||'').trim() ||
+        (res && (res.error === 'need_fields' || res.error === 'need_title_date'));
+      const errText = need
+        ? 'Need an event title and a date'
+        : ((res && res.error) ? String(res.error) : 'Could not save');
+      setCwAddMsg(errText, 'warn');
+      try { setCwWeekStatusLine(errText, true); } catch (e2) {}
     }
   });
-  // Keep clicks/keys inside sheet from bubbling to HUD drag / standby handlers
+  // Bubble phase ONLY — capture:true previously stopped events before #cw-save
+  // (iPad Save appeared to do nothing). Children must receive click/touch first.
   const sheet = modal.querySelector('.cw-add-sheet');
   if (sheet) {
     ['pointerdown','touchstart','click','keydown','keyup','keypress','input'].forEach(function(evt){
-      sheet.addEventListener(evt, function(ev){ try { ev.stopPropagation(); } catch (e) {} }, true);
+      sheet.addEventListener(evt, function(ev){ try { ev.stopPropagation(); } catch (e) {} }, false);
     });
   }
 }
-
 
 function escCwAttr(s){
   return String(s == null ? '' : s)
@@ -3664,8 +3840,30 @@ function bindCwDelModalOnce(){
   const sheet = modal.querySelector('.cw-del-sheet');
   if (sheet) {
     ['pointerdown','touchstart','click','keydown','keyup','keypress'].forEach(function(evt){
-      sheet.addEventListener(evt, function(ev){ try { ev.stopPropagation(); } catch (e) {} }, true);
+      sheet.addEventListener(evt, function(ev){ try { ev.stopPropagation(); } catch (e) {} }, false);
     });
+  }
+  const confirmBtn = document.getElementById('cw-del-confirm');
+  const cancelBtn = document.getElementById('cw-del-cancel');
+  // Re-bind with touch-safe activator if not already (click listeners above remain)
+  if (confirmBtn && !confirmBtn._cwActivateBound) {
+    /* keep existing click handler; add touchend debounce bridge */
+    let last = 0;
+    confirmBtn.addEventListener('touchend', function(ev){
+      try { ev.preventDefault(); ev.stopPropagation(); } catch (e) {}
+      const now = Date.now();
+      if (now - last < 450) return;
+      last = now;
+      confirmBtn.click();
+    }, {passive:false});
+    confirmBtn._cwActivateBound = true;
+  }
+  if (cancelBtn && !cancelBtn._cwTouchBound) {
+    cancelBtn._cwTouchBound = true;
+    cancelBtn.addEventListener('touchend', function(ev){
+      try { ev.preventDefault(); ev.stopPropagation(); } catch (e) {}
+      cancelBtn.click();
+    }, {passive:false});
   }
 }
 
@@ -3717,6 +3915,8 @@ async function submitCalwxEvent(title, date, time){
     calendar_id: HOUSE_CAL_ID
   };
   if (!body.title || body.date.length !== 10) return {ok:false, error:'need_title_date'};
+  let httpErr = '';
+  let netErr = '';
   // Prefer HA webhook (works from HA frontend iframe same-origin).
   try {
     const r = await fetch('/api/webhook/' + CAL_EVENT_WEBHOOK, {
@@ -3729,7 +3929,10 @@ async function submitCalwxEvent(title, date, time){
       try { await loadWeek(); } catch (e) {}
       return {ok:true, via:'webhook'};
     }
-  } catch (e) {}
+    httpErr = 'Webhook HTTP ' + r.status;
+  } catch (e) {
+    netErr = (e && e.message) ? ('Network: ' + e.message) : 'Network error';
+  }
   // Fallback: stash locally so UI isn't empty of feedback
   try {
     const key = 'fa_pending_cal_events_v1';
@@ -3738,7 +3941,8 @@ async function submitCalwxEvent(title, date, time){
     cur.pending.push(Object.assign({queued_at:new Date().toISOString()}, body));
     localStorage.setItem(key, JSON.stringify(cur));
   } catch (e2) {}
-  return {ok:true, via:'local_queue', note:'HA Google Calendar may still be needed'};
+  const note = httpErr || netErr || 'HA webhook unreachable';
+  return {ok:true, via:'local_queue', note:'Queued locally — ' + note};
 }
 
 function renderCalWeather(){
@@ -4504,7 +4708,7 @@ function exitFullscreen(){
 
 function standbyStandaloneUrl(){
   // Intentionally unused: no popup / external standby navigation.
-  return '/local/family-album/frame.html?standby=1&v=20260911forecast3';
+  return '/local/family-album/frame.html?standby=1&v=20260912-ui3fix1';
 }
 
 function openStandaloneStandby(){
@@ -4791,7 +4995,7 @@ box.addEventListener('touchstart', (e) => {
   if (!standbyOn) return;
   // Ignore if Exit / FS / Fit control
   const tgt = e.target;
-  if (tgt && (tgt.id === 'sb-exit' || tgt.id === 'sb-fs' || tgt.id === 'sb-fit' || (tgt.closest && tgt.closest('#sb-exit,#sb-fs,#sb-fit')))) return;
+  if (tgt && (tgt.id === 'sb-exit' || tgt.id === 'sb-fs' || tgt.id === 'sb-fit' || tgt.id === 'sb-hud-gear' || (tgt.closest && tgt.closest('#sb-exit,#sb-fs,#sb-fit,#sb-hud-gear')))) return;
 
   if (e.touches.length >= 2) {
     if (shouldPhotoPinch(e)) {
@@ -4846,7 +5050,7 @@ document.addEventListener('touchstart', (e) => {
   if (!standbyOn) return;
   if (!e.touches || e.touches.length < 2) return;
   const tgt = e.target;
-  if (tgt && tgt.closest && tgt.closest('#sb-exit,#sb-fs,#sb-fit')) return;
+  if (tgt && tgt.closest && tgt.closest('#sb-exit,#sb-fs,#sb-fit,#sb-hud-gear')) return;
   if (touchOnResizeHandle(e)) return;
   if (!shouldPhotoPinch(e)) return;
   uzOnPinchStart(e);
@@ -5116,8 +5320,9 @@ function startSlideshow(){
   updateClock();
   applyNightDim();
   try { if (typeof startCalwxDrag === 'function') startCalwxDrag(); } catch (e) {}
-  try { if (typeof startClockDrag === 'function') startClockDrag();
-try { initCanvasZoom(); } catch (e) {} } catch (e) {}
+  try { if (typeof startClockDrag === 'function') startClockDrag(); } catch (e) {}
+  try { initCanvasZoom(); } catch (e) {}
+  try { bindHudGearOnce(); syncHudEditChrome(); } catch (e) {}
   // legacy week/forecast drag disabled — combined #sb-calweather
   try { if (typeof loadLayout === 'function') loadLayout(); } catch (e) {}
   try { if (typeof loadCalendar === 'function') loadCalendar(); } catch (e) {}
