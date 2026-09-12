@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black"/>
 <title>Family Album Frame</title>
-<!-- frame FRAME_BUILD=20260912-ui8 v=20260912-ui8 (bump Lovelace ?v= on HA deploy) square-stage 1:1 photo-only-zoom hud-fixed gesture-lock layout-guides-edit-only snap-align hud-clock no-pill drag-clock calweather-combined swipe-weeks add-event delete-event week.json forecast.json preserve-add-modal-input overview-layout-lock gear-edit-mode save-touch-fix tasks-tab-shell hub-bottom-nav tasks-webhooks-claim-complete profile-picker lists-tab lists-webhooks-add-toggle-clear meals-tab meals-webhooks-set-clear-upsert -->
+<!-- frame FRAME_BUILD=20260912-ui9 v=20260912-ui9 (bump Lovelace ?v= on HA deploy) square-stage 1:1 photo-only-zoom hud-fixed gesture-lock layout-guides-edit-only snap-align hud-clock no-pill drag-clock calweather-combined swipe-weeks add-event delete-event week.json forecast.json preserve-add-modal-input overview-layout-lock gear-edit-mode save-touch-fix tasks-tab-shell hub-bottom-nav tasks-webhooks-claim-complete profile-picker lists-tab lists-webhooks-add-toggle-clear meals-tab meals-webhooks-set-clear-upsert board-tab board-webhooks-add-delete-pin -->
 <style>
   html,body{margin:0;height:100%;background:#0a1220;overflow:hidden;touch-action:manipulation;-webkit-user-select:none;user-select:none}
   html.standby-page,html.standby-page body{background:#000}
@@ -1501,6 +1501,130 @@
   html.hub-tab-meals #sb-forecast,
   html.hub-tab-meals #sb-clock{opacity:.18;pointer-events:none}
 
+  /* ---- Board (messages) panel ---- */
+  #fa-board{
+    position:fixed;inset:0;z-index:2147482900;
+    display:none;flex-direction:column;
+    padding:max(12px,env(safe-area-inset-top)) 14px calc(72px + env(safe-area-inset-bottom)) 14px;
+    box-sizing:border-box;
+    background:rgba(6,10,18,.88);
+    backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+    color:#fff;pointer-events:auto;touch-action:manipulation;
+    -webkit-user-select:none;user-select:none;
+  }
+  html.hub-tab-board #fa-board{display:flex}
+  html.overview-mini #fa-board{display:none!important}
+  #fa-board .fa-board-head{
+    display:flex;align-items:baseline;justify-content:space-between;gap:12px;
+    margin:0 0 10px;flex:0 0 auto;
+  }
+  #fa-board .fa-board-head h2{
+    margin:0;font:800 22px/1.15 -apple-system,sans-serif;letter-spacing:.02em;
+  }
+  #fa-board .fa-board-sub{
+    margin:0;font:600 12px/1.2 -apple-system,sans-serif;opacity:.65;
+  }
+  #fa-board .fa-board-status{
+    min-height:18px;margin:0 0 8px;font:600 12px/1.3 -apple-system,sans-serif;
+    color:rgba(180,210,255,.9);
+  }
+  #fa-board .fa-board-add{
+    display:flex;flex-direction:column;gap:8px;
+    margin:0 0 12px;flex:0 0 auto;
+    padding:10px;border-radius:14px;
+    background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);
+  }
+  #fa-board .fa-board-add textarea{
+    width:100%;min-height:64px;box-sizing:border-box;resize:vertical;
+    padding:10px 12px;border-radius:12px;
+    border:1px solid rgba(255,255,255,.22);background:rgba(0,0,0,.28);
+    color:#fff;font:600 15px/1.35 -apple-system,sans-serif;
+    -webkit-user-select:text;user-select:text;
+  }
+  #fa-board .fa-board-add textarea::placeholder{color:rgba(255,255,255,.45)}
+  #fa-board .fa-board-add-row{
+    display:flex;flex-wrap:wrap;align-items:center;gap:8px;
+  }
+  #fa-board .fa-board-colors{
+    display:flex;flex-wrap:wrap;gap:8px;flex:1 1 auto;
+  }
+  #fa-board .fa-board-color{
+    width:36px;height:36px;border-radius:10px;padding:0;cursor:pointer;
+    border:2px solid rgba(0,0,0,.25);
+    box-shadow:0 1px 3px rgba(0,0,0,.25);
+    -webkit-tap-highlight-color:transparent;
+  }
+  #fa-board .fa-board-color.on{
+    box-shadow:0 0 0 2px #fff,0 0 0 4px rgba(120,180,255,.85);
+  }
+  #fa-board .fa-board-add-btn{
+    min-height:44px;min-width:88px;padding:0 16px;border-radius:12px;cursor:pointer;
+    border:1px solid rgba(180,200,255,.55);background:rgba(90,120,220,.5);
+    color:#fff;font:800 14px/1 -apple-system,sans-serif;
+    -webkit-tap-highlight-color:transparent;
+  }
+  #fa-board .fa-board-add-btn:active{transform:scale(.96)}
+  #fa-board .fa-board-add-btn[disabled]{opacity:.45;pointer-events:none}
+  #fa-board .fa-board-scroll{
+    flex:1 1 auto;min-height:0;overflow:auto;-webkit-overflow-scrolling:touch;
+    padding:4px 2px 12px;
+  }
+  #fa-board .fa-board-grid{
+    display:flex;flex-wrap:wrap;gap:14px;align-items:flex-start;
+    justify-content:flex-start;
+  }
+  #fa-board .fa-note{
+    position:relative;
+    width:min(46%, 220px);min-width:148px;
+    padding:16px 14px 12px;
+    border-radius:4px 4px 6px 6px;
+    color:#2a2418;
+    background:#FFE082;
+    box-shadow:2px 4px 12px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.45);
+    font:600 15px/1.35 -apple-system,sans-serif;
+    transform-origin:center top;
+    -webkit-user-select:none;user-select:none;
+  }
+  #fa-board .fa-note.pinned{
+    box-shadow:2px 6px 16px rgba(0,0,0,.35), 0 0 0 2px rgba(255,255,255,.55), inset 0 1px 0 rgba(255,255,255,.5);
+    z-index:1;
+  }
+  #fa-board .fa-note .fa-note-pinmark{
+    position:absolute;top:-6px;left:50%;transform:translateX(-50%);
+    font-size:18px;line-height:1;filter:drop-shadow(0 1px 2px rgba(0,0,0,.35));
+  }
+  #fa-board .fa-note .fa-note-text{
+    white-space:pre-wrap;word-break:break-word;margin:4px 0 10px;
+    min-height:2.6em;
+  }
+  #fa-board .fa-note .fa-note-meta{
+    display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px;
+    font:600 11px/1.2 -apple-system,sans-serif;opacity:.72;color:inherit;
+  }
+  #fa-board .fa-note .fa-note-actions{
+    display:flex;gap:6px;margin-top:8px;
+  }
+  #fa-board .fa-note .fa-note-actions button{
+    flex:1 1 0;min-height:40px;padding:0 8px;border-radius:10px;cursor:pointer;
+    border:1px solid rgba(0,0,0,.18);background:rgba(255,255,255,.45);
+    color:#2a2418;font:800 12px/1 -apple-system,sans-serif;
+    -webkit-tap-highlight-color:transparent;
+  }
+  #fa-board .fa-note .fa-note-actions button:active{transform:scale(.96)}
+  #fa-board .fa-note .fa-note-actions button.danger{
+    background:rgba(220,80,80,.28);border-color:rgba(160,40,40,.35);
+  }
+  #fa-board .fa-empty{
+    margin:28px 12px;text-align:center;opacity:.72;
+    font:600 15px/1.45 -apple-system,sans-serif;color:#fff;
+  }
+  #fa-board .fa-empty .big{font-size:36px;line-height:1.2;margin-bottom:8px}
+  html.hub-tab-board #sb-calweather,
+  html.hub-tab-board #sb-week,
+  html.hub-tab-board #sb-forecast,
+  html.hub-tab-board #sb-clock{opacity:.18;pointer-events:none}
+
+
 </style>
 </head>
 <body>
@@ -1640,7 +1764,7 @@
   <button type="button" class="fa-tab" data-tab="tasks"><span class="ico" aria-hidden="true">✅</span><span>Tasks</span></button>
   <button type="button" class="fa-tab" data-tab="lists"><span class="ico" aria-hidden="true">🧾</span><span>Lists</span></button>
   <button type="button" class="fa-tab" data-tab="meals"><span class="ico" aria-hidden="true">🍽️</span><span>Meals</span></button>
-  <button type="button" class="fa-tab soon" data-tab="board" disabled aria-disabled="true"><span class="ico" aria-hidden="true">📌</span><span>Board</span><span class="soon-tag">soon</span></button>
+  <button type="button" class="fa-tab" data-tab="board"><span class="ico" aria-hidden="true">📌</span><span>Board</span></button>
   <button type="button" class="fa-tab soon" data-tab="fun" disabled aria-disabled="true"><span class="ico" aria-hidden="true">🎮</span><span>Fun</span><span class="soon-tag">soon</span></button>
   <button type="button" class="fa-tab soon" data-tab="settings" disabled aria-disabled="true"><span class="ico" aria-hidden="true">···</span><span>Settings</span><span class="soon-tag">soon</span></button>
 </nav>
@@ -1687,6 +1811,23 @@
   <div class="fa-meals-scroll" id="fa-meals-body"></div>
 </div>
 
+
+<div id="fa-board" aria-hidden="true">
+  <div class="fa-board-head">
+    <h2>Board</h2>
+    <p class="fa-board-sub" id="fa-board-sub"></p>
+  </div>
+  <div class="fa-board-status" id="fa-board-status" role="status" aria-live="polite"></div>
+  <div class="fa-board-add" id="fa-board-add">
+    <textarea id="fa-board-input" placeholder="Leave a sticky note…" maxlength="500" rows="3"></textarea>
+    <div class="fa-board-add-row">
+      <div class="fa-board-colors" id="fa-board-colors" aria-label="Note color"></div>
+      <button type="button" id="fa-board-add-btn" class="fa-board-add-btn">Add</button>
+    </div>
+  </div>
+  <div class="fa-board-scroll" id="fa-board-list"></div>
+</div>
+
 <div id="fa-meal-slot-modal" aria-hidden="true">
   <div class="fa-meal-sheet" role="dialog" aria-modal="true" aria-labelledby="fa-meal-slot-title">
     <h3 id="fa-meal-slot-title">Pick a meal</h3>
@@ -1703,7 +1844,7 @@
 
 <script>
 /* Identifiable deploy build — bump Lovelace iframe ?v= separately on HA. */
-const FRAME_BUILD = '20260912-ui8';
+const FRAME_BUILD = '20260912-ui9';
 try { window.FRAME_BUILD = FRAME_BUILD; } catch (e) {}
 const FALLBACK = [
   "/local/family-album/filler_forest.jpg",
@@ -3368,7 +3509,7 @@ function bindHoldDrag(el, storageKey, kind){
 
   const onDown = (ev) => {
     if (typeof hudLayoutEditAllowed === 'function' && !hudLayoutEditAllowed()) return;
-    if (ev.target && ev.target.closest && (ev.target.closest('#sb-exit') || ev.target.closest('#sb-fs') || ev.target.closest('#sb-fit') || ev.target.closest('#sb-hud-gear') || ev.target.closest('#fa-hub-nav') || ev.target.closest('#fa-tasks') || ev.target.closest('#fa-lists') || ev.target.closest('#fa-meals') || ev.target.closest('#fa-meal-slot-modal'))) return;
+    if (ev.target && ev.target.closest && (ev.target.closest('#sb-exit') || ev.target.closest('#sb-fs') || ev.target.closest('#sb-fit') || ev.target.closest('#sb-hud-gear') || ev.target.closest('#fa-hub-nav') || ev.target.closest('#fa-tasks') || ev.target.closest('#fa-lists') || ev.target.closest('#fa-meals') || ev.target.closest('#fa-meal-slot-modal') || ev.target.closest('#fa-board'))) return;
     // Cal+weather: swipe on day strip / form / + — do not hold-drag the whole card (header/now still drags).
     if (kind === 'calwx' && ev.target && ev.target.closest &&
         ev.target.closest('.cw-days, .cw-day, .cw-evs, .cw-ev, .cw-form, .cw-add, .cw-hint, input, button.cw-add, .cw-toolbar, #cw-add-modal, .cw-add-sheet, #cw-del-modal, .cw-del-sheet')) {
@@ -3741,7 +3882,10 @@ const LIST_CLEAR_WEBHOOK = 'fa_list_clear_6a44c1a51b66832a05b46708';
 const MEAL_SET_WEBHOOK = 'fa_meal_set_ed7245130f9f42ae6b382bce';
 const MEAL_CLEAR_WEBHOOK = 'fa_meal_clear_954da1e09d79efb43a4a8fa0';
 const MEAL_UPSERT_WEBHOOK = 'fa_meal_upsert_f9f7faf0fe54feffff07b665';
-const HUB_TABS_ACTIVE = { home:1, week:1, tasks:1, lists:1, meals:1 };
+const MSG_ADD_WEBHOOK = 'fa_msg_add_8c9415dc7cafefb510c39979';
+const MSG_DEL_WEBHOOK = 'fa_msg_del_c2ba06f28b669bf17fcca0e4';
+const MSG_PIN_WEBHOOK = 'fa_msg_pin_0e009ff24c7aa7391526aac4';
+const HUB_TABS_ACTIVE = { home:1, week:1, tasks:1, lists:1, meals:1, board:1 };
 let hubTab = 'home';
 const TASKS_STATE = {
   profiles: [],
@@ -3782,6 +3926,26 @@ const MEALS_STATE = {
   busy: false
 };
 
+const BOARD_COLORS = [
+  { id:'yellow', hex:'#FFE082' },
+  { id:'pink', hex:'#F8BBD0' },
+  { id:'blue', hex:'#90CAF9' },
+  { id:'green', hex:'#A5D6A7' },
+  { id:'orange', hex:'#FFCC80' },
+  { id:'lavender', hex:'#CE93D8' }
+];
+const BOARD_STATE = {
+  messages: [],
+  selectedColor: '#FFE082',
+  pendingAdds: {}, // temp_id -> {text, color, author_id?}
+  pendingDeletes: {}, // id -> true
+  optimisticPinned: {}, // id -> bool
+  statusMsg: '',
+  loaded: false,
+  loadError: '',
+  busy: false
+};
+
 function todayISO(){
   const d = new Date();
   const y = d.getFullYear();
@@ -3815,7 +3979,7 @@ function setHubTab(tab){
   if (!HUB_TABS_ACTIVE[tab]) return;
   hubTab = tab;
   try {
-    document.documentElement.classList.remove('hub-tab-home','hub-tab-week','hub-tab-tasks','hub-tab-lists','hub-tab-meals');
+    document.documentElement.classList.remove('hub-tab-home','hub-tab-week','hub-tab-tasks','hub-tab-lists','hub-tab-meals','hub-tab-board');
     document.documentElement.classList.add('hub-tab-' + tab);
   } catch (e) {}
   const nav = document.getElementById('fa-hub-nav');
@@ -3843,6 +4007,11 @@ function setHubTab(tab){
     const showM = tab === 'meals' && IS_FULL_FRAME;
     mealsPanel.setAttribute('aria-hidden', showM ? 'false' : 'true');
   }
+  const boardPanel = document.getElementById('fa-board');
+  if (boardPanel) {
+    const showB = tab === 'board' && IS_FULL_FRAME;
+    boardPanel.setAttribute('aria-hidden', showB ? 'false' : 'true');
+  }
   if (tab !== 'meals') {
     try { closeMealSlotModal(); } catch (e) {}
   }
@@ -3857,6 +4026,14 @@ function setHubTab(tab){
   if (tab === 'meals') {
     try { renderMealsPanel(); } catch (e) {}
     try { loadMealsData(); } catch (e) {}
+  }
+  if (tab === 'board') {
+    try { renderBoardColors(); } catch (e) {}
+    try { renderBoardPanel(); } catch (e) {}
+    try { loadBoardData(); } catch (e) {}
+    try {
+      if (!(TASKS_STATE.profiles || []).length) loadTasksData();
+    } catch (e) {}
   }
   syncHubNavVisibility();
 }
@@ -4796,6 +4973,486 @@ function bindListsPanelOnce(){
     }, false);
   }
 }
+
+
+/* ---- Board / messages (messages.json + add/delete/pin webhooks) ---- */
+function setBoardStatus(msg){
+  BOARD_STATE.statusMsg = msg || '';
+  const el = document.getElementById('fa-board-status');
+  if (el) el.textContent = BOARD_STATE.statusMsg;
+}
+
+function newMsgId(){
+  return 'm_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8);
+}
+
+function normalizeBoardColor(c){
+  const s = String(c || '').trim();
+  if (/^#[0-9A-Fa-f]{6}$/.test(s)) return s.toUpperCase();
+  if (/^#[0-9A-Fa-f]{3}$/.test(s)) {
+    return ('#' + s[1]+s[1]+s[2]+s[2]+s[3]+s[3]).toUpperCase();
+  }
+  for (let i = 0; i < BOARD_COLORS.length; i++) {
+    if (BOARD_COLORS[i].id === s.toLowerCase()) return BOARD_COLORS[i].hex.toUpperCase();
+    if (BOARD_COLORS[i].hex.toUpperCase() === s.toUpperCase()) return BOARD_COLORS[i].hex.toUpperCase();
+  }
+  return '#FFE082';
+}
+
+function normalizeMessage(m){
+  if (!m || typeof m !== 'object' || !m.id) return null;
+  const text = String(m.text || '').trim();
+  if (!text) return null;
+  return {
+    id: String(m.id),
+    text: text,
+    author_id: m.author_id ? String(m.author_id) : '',
+    color: normalizeBoardColor(m.color || '#FFE082'),
+    created: m.created ? String(m.created) : '',
+    pinned: !!m.pinned
+  };
+}
+
+function normalizeMessages(data){
+  const list = (data && Array.isArray(data.messages)) ? data.messages : [];
+  const out = [];
+  for (let i = 0; i < list.length; i++) {
+    const n = normalizeMessage(list[i]);
+    if (n) out.push(n);
+  }
+  return out;
+}
+
+function noteRotateDeg(id){
+  let h = 0;
+  const s = String(id || '');
+  for (let i = 0; i < s.length; i++) h = ((h << 5) - h) + s.charCodeAt(i) | 0;
+  return (h % 7) - 3; // -3..3
+}
+
+function formatMsgWhen(created){
+  if (!created) return '';
+  try {
+    const d = new Date(created);
+    if (isNaN(d.getTime())) return String(created).slice(0, 16);
+    const now = new Date();
+    const sameDay = d.toDateString() === now.toDateString();
+    const opts = sameDay
+      ? { hour: 'numeric', minute: '2-digit' }
+      : { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' };
+    return d.toLocaleString(undefined, opts);
+  } catch (e) {
+    return String(created).slice(0, 16);
+  }
+}
+
+function authorName(authorId){
+  if (!authorId) return '';
+  try {
+    const p = profileById(authorId);
+    if (p) return p.name;
+  } catch (e) {}
+  return authorId;
+}
+
+function viewMessagesForRender(){
+  const base = (BOARD_STATE.messages || []).slice();
+  // apply optimistic pin
+  const mapped = base.map(function(m){
+    if (Object.prototype.hasOwnProperty.call(BOARD_STATE.optimisticPinned, m.id)) {
+      return Object.assign({}, m, { pinned: !!BOARD_STATE.optimisticPinned[m.id] });
+    }
+    return m;
+  }).filter(function(m){
+    return !BOARD_STATE.pendingDeletes[m.id];
+  });
+  // pending adds
+  Object.keys(BOARD_STATE.pendingAdds).forEach(function(pid){
+    const p = BOARD_STATE.pendingAdds[pid];
+    if (!p) return;
+    mapped.push({
+      id: pid,
+      text: p.text,
+      author_id: p.author_id || '',
+      color: normalizeBoardColor(p.color),
+      created: p.created || new Date().toISOString(),
+      pinned: !!p.pinned,
+      _pending: true
+    });
+  });
+  mapped.sort(function(a, b){
+    const ap = a.pinned ? 1 : 0;
+    const bp = b.pinned ? 1 : 0;
+    if (ap !== bp) return bp - ap;
+    const at = a.created || '';
+    const bt = b.created || '';
+    if (at !== bt) return bt < at ? -1 : (bt > at ? 1 : 0);
+    return String(a.id).localeCompare(String(b.id));
+  });
+  return mapped;
+}
+
+async function loadBoardData(){
+  const res = await fetchFaJson('messages.json');
+  BOARD_STATE.messages = normalizeMessages(res.data);
+  BOARD_STATE.loaded = true;
+  if (!res.ok || res.empty) {
+    if (!BOARD_STATE.messages.length) {
+      BOARD_STATE.loadError = 'Waiting on HA seed (messages.json)';
+    } else {
+      BOARD_STATE.loadError = '';
+    }
+  } else {
+    BOARD_STATE.loadError = '';
+  }
+  // Drop pending adds that appear in JSON (id or same text)
+  Object.keys(BOARD_STATE.pendingAdds).forEach(function(pid){
+    const p = BOARD_STATE.pendingAdds[pid];
+    if (!p) return;
+    if ((BOARD_STATE.messages || []).some(function(m){
+      return m.id === pid || String(m.text) === String(p.text);
+    })) {
+      delete BOARD_STATE.pendingAdds[pid];
+    }
+  });
+  Object.keys(BOARD_STATE.pendingDeletes).forEach(function(id){
+    if (!(BOARD_STATE.messages || []).some(function(m){ return m.id === id; })) {
+      delete BOARD_STATE.pendingDeletes[id];
+    }
+  });
+  Object.keys(BOARD_STATE.optimisticPinned).forEach(function(id){
+    const m = (BOARD_STATE.messages || []).find(function(x){ return x.id === id; });
+    if (m && !!m.pinned === !!BOARD_STATE.optimisticPinned[id]) {
+      delete BOARD_STATE.optimisticPinned[id];
+    }
+  });
+  if (hubTab === 'board') renderBoardPanel();
+  return { ok: !!(res.ok && !res.empty), data: res.data };
+}
+
+function renderBoardColors(){
+  const el = document.getElementById('fa-board-colors');
+  if (!el) return;
+  const selected = normalizeBoardColor(BOARD_STATE.selectedColor);
+  el.innerHTML = BOARD_COLORS.map(function(c){
+    const hex = c.hex.toUpperCase();
+    const on = hex === selected ? ' on' : '';
+    return '<button type="button" class="fa-board-color' + on + '" data-board-color="' + hex + '"' +
+      ' aria-label="' + escapeHtml(c.id) + '" aria-pressed="' + (hex === selected ? 'true' : 'false') + '"' +
+      ' style="background:' + hex + '"></button>';
+  }).join('');
+}
+
+function renderBoardNote(m){
+  const rot = noteRotateDeg(m.id);
+  const pinMark = m.pinned ? '<div class="fa-note-pinmark" aria-hidden="true">📌</div>' : '';
+  const who = authorName(m.author_id);
+  const when = formatMsgWhen(m.created);
+  const metaBits = [];
+  if (who) metaBits.push(escapeHtml(who));
+  if (when) metaBits.push(escapeHtml(when));
+  if (m._pending) metaBits.push('sending…');
+  const pinLabel = m.pinned ? 'Unpin' : 'Pin';
+  return '<article class="fa-note' + (m.pinned ? ' pinned' : '') + '" data-msg-id="' + escapeHtml(m.id) + '"' +
+    ' style="background:' + String(m.color||'#FFE082').replace(/"/g,'') + ';transform:rotate(' + rot + 'deg)">' +
+    pinMark +
+    '<div class="fa-note-text">' + escapeHtml(m.text || '') + '</div>' +
+    '<div class="fa-note-meta">' + (metaBits.join(' · ') || '&nbsp;') + '</div>' +
+    '<div class="fa-note-actions">' +
+      '<button type="button" data-msg-pin="' + escapeHtml(m.id) + '" aria-pressed="' + (m.pinned ? 'true' : 'false') + '">' + pinLabel + '</button>' +
+      '<button type="button" class="danger" data-msg-del="' + escapeHtml(m.id) + '">Delete</button>' +
+    '</div>' +
+    '</article>';
+}
+
+function renderBoardPanel(){
+  const listEl = document.getElementById('fa-board-list');
+  const subEl = document.getElementById('fa-board-sub');
+  const addBtn = document.getElementById('fa-board-add-btn');
+  renderBoardColors();
+  const msgs = viewMessagesForRender();
+  const pinnedN = msgs.filter(function(m){ return m.pinned; }).length;
+  if (subEl) {
+    if (!msgs.length) subEl.textContent = 'Sticky notes for the family';
+    else subEl.textContent = msgs.length + ' note' + (msgs.length === 1 ? '' : 's') +
+      (pinnedN ? (' · ' + pinnedN + ' pinned') : '');
+  }
+  if (BOARD_STATE.loadError && !(BOARD_STATE.messages || []).length && !Object.keys(BOARD_STATE.pendingAdds).length) {
+    setBoardStatus(BOARD_STATE.loadError);
+  } else {
+    setBoardStatus(BOARD_STATE.statusMsg || '');
+  }
+  if (addBtn) addBtn.disabled = !!BOARD_STATE.busy;
+  if (!listEl) return;
+  if (!msgs.length) {
+    listEl.innerHTML = '<div class="fa-empty"><div class="big" aria-hidden="true">📌</div>' +
+      'No notes yet.<br/>Add a sticky note above.</div>';
+    return;
+  }
+  listEl.innerHTML = '<div class="fa-board-grid">' + msgs.map(renderBoardNote).join('') + '</div>';
+}
+
+async function refreshBoardAfterWrite(verify){
+  let last = null;
+  for (let i = 0; i < 6; i++) {
+    if (i) await sleepMs(350 + i * 150);
+    last = await loadBoardData();
+    try {
+      if (verify && verify()) return { ok:true, attempts:i+1 };
+    } catch (e) {}
+  }
+  return { ok:false, attempts:6, last:last };
+}
+
+async function addBoardNote(text, color){
+  text = String(text || '').trim();
+  color = normalizeBoardColor(color || BOARD_STATE.selectedColor);
+  if (!text) {
+    setBoardStatus('Type a note first');
+    return;
+  }
+  if (!MSG_ADD_WEBHOOK) {
+    setBoardStatus('Add webhook missing');
+    return;
+  }
+  if (BOARD_STATE.busy) {
+    setBoardStatus('Busy — try again in a moment');
+    return;
+  }
+  let authorId = '';
+  try { authorId = ensureSelectedProfile() || TASKS_STATE.selectedProfileId || ''; } catch (e) { authorId = ''; }
+  const tempId = newMsgId();
+  BOARD_STATE.busy = true;
+  BOARD_STATE.pendingAdds[tempId] = {
+    text: text,
+    color: color,
+    author_id: authorId || '',
+    pinned: false,
+    created: new Date().toISOString()
+  };
+  renderBoardPanel();
+  setBoardStatus('Posting…');
+  try {
+    const body = { text: text, color: color };
+    if (authorId) body.author_id = authorId;
+    const r = await fetch('/api/webhook/' + MSG_ADD_WEBHOOK, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(body),
+      cache: 'no-store'
+    });
+    if (!(r.ok || r.status === 200 || r.status === 201)) {
+      delete BOARD_STATE.pendingAdds[tempId];
+      renderBoardPanel();
+      setBoardStatus('Add failed (HTTP ' + r.status + ')');
+      return;
+    }
+    const ver = await refreshBoardAfterWrite(function(){
+      return (BOARD_STATE.messages || []).some(function(m){
+        return m.id === tempId || String(m.text) === text;
+      });
+    });
+    if (ver.ok) {
+      delete BOARD_STATE.pendingAdds[tempId];
+      const inp = document.getElementById('fa-board-input');
+      if (inp) inp.value = '';
+      setBoardStatus('Posted');
+    } else {
+      setBoardStatus('Posted — waiting for messages.json refresh');
+    }
+    renderBoardPanel();
+  } catch (e) {
+    delete BOARD_STATE.pendingAdds[tempId];
+    renderBoardPanel();
+    setBoardStatus('Add failed (network)');
+  } finally {
+    BOARD_STATE.busy = false;
+    renderBoardPanel();
+  }
+}
+
+async function deleteBoardNote(id){
+  id = String(id || '');
+  if (!id) return;
+  if (!MSG_DEL_WEBHOOK) {
+    setBoardStatus('Delete webhook missing');
+    return;
+  }
+  if (BOARD_STATE.busy) {
+    setBoardStatus('Busy — try again in a moment');
+    return;
+  }
+  if (BOARD_STATE.pendingAdds[id]) {
+    delete BOARD_STATE.pendingAdds[id];
+    renderBoardPanel();
+    setBoardStatus('Removed');
+    return;
+  }
+  BOARD_STATE.busy = true;
+  BOARD_STATE.pendingDeletes[id] = true;
+  renderBoardPanel();
+  setBoardStatus('Deleting…');
+  try {
+    const r = await fetch('/api/webhook/' + MSG_DEL_WEBHOOK, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ id: id }),
+      cache: 'no-store'
+    });
+    if (!(r.ok || r.status === 200 || r.status === 201)) {
+      delete BOARD_STATE.pendingDeletes[id];
+      renderBoardPanel();
+      setBoardStatus('Delete failed (HTTP ' + r.status + ')');
+      return;
+    }
+    const ver = await refreshBoardAfterWrite(function(){
+      return !(BOARD_STATE.messages || []).some(function(m){ return m.id === id; });
+    });
+    if (ver.ok) {
+      delete BOARD_STATE.pendingDeletes[id];
+      setBoardStatus('Deleted');
+    } else {
+      setBoardStatus('Posted — waiting for messages.json refresh');
+    }
+    renderBoardPanel();
+  } catch (e) {
+    delete BOARD_STATE.pendingDeletes[id];
+    await loadBoardData();
+    setBoardStatus('Delete failed (network)');
+  } finally {
+    BOARD_STATE.busy = false;
+    renderBoardPanel();
+  }
+}
+
+async function toggleBoardPin(id){
+  id = String(id || '');
+  if (!id) return;
+  if (!MSG_PIN_WEBHOOK) {
+    setBoardStatus('Pin webhook missing');
+    return;
+  }
+  if (BOARD_STATE.busy) {
+    setBoardStatus('Busy — try again in a moment');
+    return;
+  }
+  if (BOARD_STATE.pendingAdds[id]) {
+    setBoardStatus('Wait until the note is saved');
+    return;
+  }
+  const current = (BOARD_STATE.messages || []).find(function(m){ return m.id === id; });
+  if (!current) {
+    setBoardStatus('Note not found');
+    return;
+  }
+  let pinnedNow = !!current.pinned;
+  if (Object.prototype.hasOwnProperty.call(BOARD_STATE.optimisticPinned, id)) {
+    pinnedNow = !!BOARD_STATE.optimisticPinned[id];
+  }
+  const next = !pinnedNow;
+  BOARD_STATE.busy = true;
+  BOARD_STATE.optimisticPinned[id] = next;
+  renderBoardPanel();
+  setBoardStatus(next ? 'Pinning…' : 'Unpinning…');
+  try {
+    const r = await fetch('/api/webhook/' + MSG_PIN_WEBHOOK, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ id: id, pinned: next }),
+      cache: 'no-store'
+    });
+    if (!(r.ok || r.status === 200 || r.status === 201)) {
+      delete BOARD_STATE.optimisticPinned[id];
+      renderBoardPanel();
+      setBoardStatus('Pin failed (HTTP ' + r.status + ')');
+      return;
+    }
+    const ver = await refreshBoardAfterWrite(function(){
+      const m = (BOARD_STATE.messages || []).find(function(x){ return x.id === id; });
+      return m && !!m.pinned === next;
+    });
+    if (ver.ok) {
+      delete BOARD_STATE.optimisticPinned[id];
+      setBoardStatus(next ? 'Pinned' : 'Unpinned');
+    } else {
+      setBoardStatus('Posted — waiting for messages.json refresh');
+    }
+    renderBoardPanel();
+  } catch (e) {
+    delete BOARD_STATE.optimisticPinned[id];
+    await loadBoardData();
+    setBoardStatus('Pin failed (network)');
+  } finally {
+    BOARD_STATE.busy = false;
+    renderBoardPanel();
+  }
+}
+
+function bindBoardPanelOnce(){
+  const colors = document.getElementById('fa-board-colors');
+  const listEl = document.getElementById('fa-board-list');
+  const addWrap = document.getElementById('fa-board-add');
+  const addBtn = document.getElementById('fa-board-add-btn');
+  const input = document.getElementById('fa-board-input');
+
+  if (colors && !colors._bound) {
+    colors._bound = true;
+    colors.addEventListener('click', function(ev){
+      const btn = ev.target && ev.target.closest ? ev.target.closest('[data-board-color]') : null;
+      if (!btn) return;
+      try { ev.preventDefault(); ev.stopPropagation(); } catch (e) {}
+      const hex = btn.getAttribute('data-board-color');
+      if (!hex) return;
+      BOARD_STATE.selectedColor = normalizeBoardColor(hex);
+      renderBoardColors();
+    }, false);
+  }
+
+  if (listEl && !listEl._bound) {
+    listEl._bound = true;
+    listEl.addEventListener('click', function(ev){
+      const pinBtn = ev.target && ev.target.closest ? ev.target.closest('[data-msg-pin]') : null;
+      if (pinBtn) {
+        try { ev.preventDefault(); ev.stopPropagation(); } catch (e) {}
+        const id = pinBtn.getAttribute('data-msg-pin');
+        if (id) toggleBoardPin(id);
+        return;
+      }
+      const delBtn = ev.target && ev.target.closest ? ev.target.closest('[data-msg-del]') : null;
+      if (delBtn) {
+        try { ev.preventDefault(); ev.stopPropagation(); } catch (e) {}
+        const id = delBtn.getAttribute('data-msg-del');
+        if (id) deleteBoardNote(id);
+      }
+    }, false);
+  }
+
+  // Bubble phase ONLY — avoid capture-phase stopPropagation eating iPad taps.
+  if (addWrap && !addWrap._boundStop) {
+    addWrap._boundStop = true;
+    ['pointerdown','touchstart','click','keydown','keyup','keypress','input'].forEach(function(evt){
+      addWrap.addEventListener(evt, function(ev){ try { ev.stopPropagation(); } catch (e) {} }, false);
+    });
+  }
+  if (addBtn && !addBtn._bound) {
+    addBtn._bound = true;
+    addBtn.addEventListener('click', function(ev){
+      try { ev.preventDefault(); ev.stopPropagation(); } catch (e) {}
+      const val = input ? input.value : '';
+      addBoardNote(val, BOARD_STATE.selectedColor);
+    }, false);
+  }
+  if (input && !input._bound) {
+    input._bound = true;
+    input.addEventListener('keydown', function(ev){
+      if (ev.key === 'Enter' && (ev.metaKey || ev.ctrlKey)) {
+        try { ev.preventDefault(); ev.stopPropagation(); } catch (e) {}
+        addBoardNote(input.value, BOARD_STATE.selectedColor);
+      }
+    }, false);
+  }
+}
+
 
 
 /* ---- Meals (meal_plan.json + recipes.json + set/clear/upsert webhooks) ---- */
@@ -7396,7 +8053,7 @@ box.addEventListener('touchstart', (e) => {
   if (!standbyOn) return;
   // Ignore if Exit / FS / Fit control
   const tgt = e.target;
-  if (tgt && (tgt.id === 'sb-exit' || tgt.id === 'sb-fs' || tgt.id === 'sb-fit' || tgt.id === 'sb-hud-gear' || (tgt.closest && tgt.closest('#sb-exit,#sb-fs,#sb-fit,#sb-hud-gear,#fa-hub-nav,#fa-tasks,#fa-lists,#cw-add-modal,#cw-del-modal')))) return;
+  if (tgt && (tgt.id === 'sb-exit' || tgt.id === 'sb-fs' || tgt.id === 'sb-fit' || tgt.id === 'sb-hud-gear' || (tgt.closest && tgt.closest('#sb-exit,#sb-fs,#sb-fit,#sb-hud-gear,#fa-hub-nav,#fa-tasks,#fa-lists,#fa-meals,#fa-meal-slot-modal,#fa-board,#cw-add-modal,#cw-del-modal')))) return;
 
   if (e.touches.length >= 2) {
     if (shouldPhotoPinch(e)) {
@@ -7451,7 +8108,7 @@ document.addEventListener('touchstart', (e) => {
   if (!standbyOn) return;
   if (!e.touches || e.touches.length < 2) return;
   const tgt = e.target;
-  if (tgt && tgt.closest && tgt.closest('#sb-exit,#sb-fs,#sb-fit,#sb-hud-gear,#fa-hub-nav,#fa-tasks,#fa-lists,#cw-add-modal,#cw-del-modal')) return;
+  if (tgt && tgt.closest && tgt.closest('#sb-exit,#sb-fs,#sb-fit,#sb-hud-gear,#fa-hub-nav,#fa-tasks,#fa-lists,#fa-meals,#fa-meal-slot-modal,#fa-board,#cw-add-modal,#cw-del-modal')) return;
   if (touchOnResizeHandle(e)) return;
   if (!shouldPhotoPinch(e)) return;
   uzOnPinchStart(e);
@@ -7728,6 +8385,7 @@ function startSlideshow(){
   try { bindTasksPanelOnce(); } catch (e) {}
   try { bindListsPanelOnce(); } catch (e) {}
   try { bindMealsPanelOnce(); } catch (e) {}
+  try { bindBoardPanelOnce(); } catch (e) {}
   try { syncHubNavVisibility(); } catch (e) {}
   // legacy week/forecast drag disabled — combined #sb-calweather
   try { if (typeof loadLayout === 'function') loadLayout(); } catch (e) {}

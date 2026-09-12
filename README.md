@@ -24,12 +24,12 @@ Live URL base:
 https://1loiy6aum6qt4x1pp4isn1o6fbott58q.ui.nabu.casa/local/family-album/
 ```
 
-Current in-file `FRAME_BUILD`: `20260912-ui8` (bump Lovelace `?v=` on HA to match on deploy).
+Current in-file `FRAME_BUILD`: `20260912-ui9` (bump Lovelace `?v=` on HA to match on deploy).
 
 Example:
 
 ```
-/local/family-album/frame.html?v=20260912-ui8
+/local/family-album/frame.html?v=20260912-ui9
 ```
 
 ## Symlink — do not treat as a second tree
@@ -88,5 +88,5 @@ Build in this order:
 2. **Tasks** — tab + complete/claim HA webhooks (ui6); profile picker + JSON refresh verify
 3. **Lists** — tab + add/toggle/clear HA webhooks (ui7); list picker + JSON refresh verify
 4. **Meals + recipes** — tab + set/clear/upsert HA webhooks (ui8); week grid + recipe list/detail
-5. **Message board**
+5. **Message board** — tab + add/delete/pin HA webhooks (ui9); sticky notes, pinned-first
 6. **Child lock + sleep**

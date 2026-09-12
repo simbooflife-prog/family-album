@@ -9,7 +9,7 @@ Internal build id lives in `frame.html` as `FRAME_BUILD` (also in the HTML comme
 
 1. Edit in git (`main` on this repo). Commit + push.
 2. Copy changed files **only** to SOT: `/homeassistant/www/family-album`.
-3. Bump every Lovelace iframe `?v=` (Overview + digital-frame). Suggested next: match `FRAME_BUILD` (currently `20260912-ui8`).
+3. Bump every Lovelace iframe `?v=` (Overview + digital-frame). Suggested next: match `FRAME_BUILD` (currently `20260912-ui9`).
 4. Verify checksums (see below). If `/config/www/family-album` still exists, md5 **both** paths — they must match (symlink).
 5. Hard refresh the frame (tablet / companion app / browser).
 
@@ -51,7 +51,7 @@ HA and tablets cache `frame.html` hard. Changing `FRAME_BUILD` inside the file i
 
 - Overview iframe: bump `?v=`
 - digital-frame dashboard iframe: bump `?v=`
-- Example: `/local/family-album/frame.html?v=20260912-ui8`
+- Example: `/local/family-album/frame.html?v=20260912-ui9`
 
 ## Calendar webhooks (create + delete)
 
@@ -129,10 +129,28 @@ Same-origin from the frame iframe on HA:
 
 **Do not trust HTTP 200 alone:** after POST, the frame re-fetches `meal_plan.json` / `recipes.json` with a short retry. Failures show in the Meals status line. Week grid always shows dinner; other meals appear when present in data. “Add ingredients to Grocery” is stubbed (no webhook yet).
 
+## Board webhooks (add + delete + pin) — ui9
+
+Frame reads (defensive if 404/empty):
+
+| File | Role |
+| --- | --- |
+| `/local/family-album/messages.json` | `{ messages: [{ id, text, author_id?, color?, created, pinned? }] }` |
+
+Same-origin from the frame iframe on HA:
+
+| Action | Method | Path | Body |
+| --- | --- | --- | --- |
+| Add note | `POST` | `/api/webhook/fa_msg_add_8c9415dc7cafefb510c39979` | `{ text, author_id?, color? }` |
+| Delete note | `POST` | `/api/webhook/fa_msg_del_c2ba06f28b669bf17fcca0e4` | `{ id }` |
+| Pin / unpin | `POST` | `/api/webhook/fa_msg_pin_0e009ff24c7aa7391526aac4` | `{ id, pinned? }` |
+
+**Do not trust HTTP 200 alone:** after POST, the frame re-fetches `messages.json` with a short retry. Failures show in the Board status line. Sticky notes sort pinned-first; optional `author_id` uses the Tasks profile picker when set.
+
 ## Hub bottom nav
 
 - **Overview mini** (no `?standby=1`): hub nav **hidden** — guests see photo frame only (family hub disguise; no house controls).
-- **Full digital-frame** (`?standby=1`): bottom tabs Home | Week | Tasks | Lists | Meals (+ muted soon: Board, Fun, Settings).
+- **Full digital-frame** (`?standby=1`): bottom tabs Home | Week | Tasks | Lists | Meals | Board (+ muted soon: Fun, Settings).
 
 ## Do not
 
