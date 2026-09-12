@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black"/>
 <title>Family Album Frame</title>
-<!-- frame FRAME_BUILD=20260912-ui6 v=20260912-ui6 (bump Lovelace ?v= on HA deploy) square-stage 1:1 photo-only-zoom hud-fixed gesture-lock layout-guides-edit-only snap-align hud-clock no-pill drag-clock calweather-combined swipe-weeks add-event delete-event week.json forecast.json preserve-add-modal-input overview-layout-lock gear-edit-mode save-touch-fix tasks-tab-shell hub-bottom-nav tasks-webhooks-claim-complete profile-picker -->
+<!-- frame FRAME_BUILD=20260912-ui7 v=20260912-ui7 (bump Lovelace ?v= on HA deploy) square-stage 1:1 photo-only-zoom hud-fixed gesture-lock layout-guides-edit-only snap-align hud-clock no-pill drag-clock calweather-combined swipe-weeks add-event delete-event week.json forecast.json preserve-add-modal-input overview-layout-lock gear-edit-mode save-touch-fix tasks-tab-shell hub-bottom-nav tasks-webhooks-claim-complete profile-picker lists-tab lists-webhooks-add-toggle-clear -->
 <style>
   html,body{margin:0;height:100%;background:#0a1220;overflow:hidden;touch-action:manipulation;-webkit-user-select:none;user-select:none}
   html.standby-page,html.standby-page body{background:#000}
@@ -1171,6 +1171,116 @@
   html.hub-tab-tasks #sb-clock{opacity:.18;pointer-events:none}
   html.hub-tab-week #sb-calweather{box-shadow:0 0 0 2px rgba(120,180,255,.55),0 8px 28px rgba(0,0,0,.35)}
 
+  /* ---- Lists panel ---- */
+  #fa-lists{
+    position:fixed;inset:0;z-index:2147482900;
+    display:none;flex-direction:column;
+    padding:max(12px,env(safe-area-inset-top)) 14px calc(72px + env(safe-area-inset-bottom)) 14px;
+    box-sizing:border-box;
+    background:rgba(6,10,18,.88);
+    backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+    color:#fff;pointer-events:auto;touch-action:manipulation;
+    -webkit-user-select:none;user-select:none;
+  }
+  html.hub-tab-lists #fa-lists{display:flex}
+  html.overview-mini #fa-lists{display:none!important}
+  #fa-lists .fa-lists-head{
+    display:flex;align-items:baseline;justify-content:space-between;gap:12px;
+    margin:0 0 10px;flex:0 0 auto;
+  }
+  #fa-lists .fa-lists-head h2{
+    margin:0;font:800 22px/1.15 -apple-system,sans-serif;letter-spacing:.02em;
+  }
+  #fa-lists .fa-lists-sub{
+    margin:0;font:600 12px/1.2 -apple-system,sans-serif;opacity:.65;
+  }
+  #fa-lists .fa-lists-picker{
+    display:flex;flex-wrap:wrap;align-items:center;gap:8px;
+    margin:0 0 10px;flex:0 0 auto;
+  }
+  #fa-lists .fa-list-pick{
+    display:inline-flex;align-items:center;gap:6px;
+    padding:8px 12px 8px 8px;border-radius:999px;cursor:pointer;
+    border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);
+    color:#fff;font:700 13px/1.2 -apple-system,sans-serif;
+    min-height:44px;-webkit-tap-highlight-color:transparent;
+  }
+  #fa-lists .fa-list-pick.on{
+    border-color:rgba(180,200,255,.75);background:rgba(100,130,220,.35);
+    box-shadow:0 0 0 1px rgba(160,190,255,.35);
+  }
+  #fa-lists .fa-list-pick .fa-dot{
+    width:12px;height:12px;border-radius:50%;flex:0 0 auto;
+    box-shadow:0 0 0 1px rgba(0,0,0,.25);
+  }
+  #fa-lists .fa-lists-status{
+    min-height:18px;margin:0 0 8px;font:600 12px/1.3 -apple-system,sans-serif;
+    color:rgba(180,210,255,.9);
+  }
+  #fa-lists .fa-lists-add{
+    display:flex;align-items:center;gap:8px;margin:0 0 8px;flex:0 0 auto;
+  }
+  #fa-lists .fa-lists-add input{
+    flex:1 1 auto;min-width:0;height:48px;padding:0 14px;border-radius:14px;
+    border:1px solid rgba(255,255,255,.22);background:rgba(0,0,0,.35);
+    color:#fff;font:600 16px/1.2 -apple-system,sans-serif;
+    -webkit-user-select:text;user-select:text;
+  }
+  #fa-lists .fa-lists-add input::placeholder{color:rgba(255,255,255,.45)}
+  #fa-lists .fa-lists-add button{
+    flex:0 0 auto;min-width:72px;height:48px;padding:0 16px;border-radius:14px;
+    border:1px solid rgba(129,199,132,.65);background:rgba(76,175,80,.55);
+    color:#fff;cursor:pointer;font:800 15px/1 -apple-system,sans-serif;
+    -webkit-tap-highlight-color:transparent;
+  }
+  #fa-lists .fa-lists-add button:active{transform:scale(.96)}
+  #fa-lists .fa-lists-add button[disabled]{opacity:.45;pointer-events:none}
+  #fa-lists .fa-lists-toolbar{
+    display:flex;justify-content:flex-end;margin:0 0 8px;flex:0 0 auto;
+  }
+  #fa-lists .fa-lists-clear{
+    min-height:40px;padding:8px 12px;border-radius:12px;cursor:pointer;
+    border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);
+    color:rgba(255,220,200,.95);font:700 12px/1.2 -apple-system,sans-serif;
+    -webkit-tap-highlight-color:transparent;
+  }
+  #fa-lists .fa-lists-clear:active{transform:scale(.96)}
+  #fa-lists .fa-lists-clear[disabled]{opacity:.4;pointer-events:none}
+  #fa-lists .fa-lists-scroll{
+    flex:1 1 auto;min-height:0;overflow:auto;-webkit-overflow-scrolling:touch;
+    padding-bottom:8px;
+  }
+  #fa-lists .fa-li{
+    display:flex;align-items:center;gap:12px;
+    padding:12px 12px;margin:0 0 8px;border-radius:14px;
+    background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);
+    cursor:pointer;min-height:48px;-webkit-tap-highlight-color:transparent;
+  }
+  #fa-lists .fa-li:active{transform:scale(.99)}
+  #fa-lists .fa-li.done{opacity:.55}
+  #fa-lists .fa-li.done .fa-li-text{text-decoration:line-through;opacity:.85}
+  #fa-lists .fa-li-check{
+    flex:0 0 auto;width:44px;height:44px;border-radius:22px;border:2px solid rgba(255,255,255,.45);
+    background:rgba(0,0,0,.25);color:#fff;
+    display:flex;align-items:center;justify-content:center;
+    font:800 20px/1 sans-serif;pointer-events:none;
+  }
+  #fa-lists .fa-li.done .fa-li-check{
+    background:rgba(76,175,80,.85);border-color:rgba(129,199,132,.95);
+  }
+  #fa-lists .fa-li-text{
+    flex:1 1 auto;min-width:0;font:700 16px/1.25 -apple-system,sans-serif;
+  }
+  #fa-lists .fa-empty{
+    margin:28px 12px;text-align:center;opacity:.72;
+    font:600 15px/1.45 -apple-system,sans-serif;
+  }
+  #fa-lists .fa-empty .big{font-size:36px;line-height:1.2;margin-bottom:8px}
+  html.hub-tab-lists #sb-calweather,
+  html.hub-tab-lists #sb-week,
+  html.hub-tab-lists #sb-forecast,
+  html.hub-tab-lists #sb-clock{opacity:.18;pointer-events:none}
+
 </style>
 </head>
 <body>
@@ -1308,7 +1418,7 @@
   <button type="button" class="fa-tab on" data-tab="home" aria-current="page"><span class="ico" aria-hidden="true">🏠</span><span>Home</span></button>
   <button type="button" class="fa-tab" data-tab="week"><span class="ico" aria-hidden="true">📅</span><span>Week</span></button>
   <button type="button" class="fa-tab" data-tab="tasks"><span class="ico" aria-hidden="true">✅</span><span>Tasks</span></button>
-  <button type="button" class="fa-tab soon" data-tab="lists" disabled aria-disabled="true"><span class="ico" aria-hidden="true">🧾</span><span>Lists</span><span class="soon-tag">soon</span></button>
+  <button type="button" class="fa-tab" data-tab="lists"><span class="ico" aria-hidden="true">🧾</span><span>Lists</span></button>
   <button type="button" class="fa-tab soon" data-tab="meals" disabled aria-disabled="true"><span class="ico" aria-hidden="true">🍽️</span><span>Meals</span><span class="soon-tag">soon</span></button>
   <button type="button" class="fa-tab soon" data-tab="board" disabled aria-disabled="true"><span class="ico" aria-hidden="true">📌</span><span>Board</span><span class="soon-tag">soon</span></button>
   <button type="button" class="fa-tab soon" data-tab="fun" disabled aria-disabled="true"><span class="ico" aria-hidden="true">🎮</span><span>Fun</span><span class="soon-tag">soon</span></button>
@@ -1324,9 +1434,26 @@
   <div class="fa-tasks-scroll" id="fa-tasks-list"></div>
 </div>
 
+<div id="fa-lists" aria-hidden="true">
+  <div class="fa-lists-head">
+    <h2>Lists</h2>
+    <p class="fa-lists-sub" id="fa-lists-sub"></p>
+  </div>
+  <div class="fa-lists-picker" id="fa-lists-picker" aria-label="Choose list"></div>
+  <div class="fa-lists-status" id="fa-lists-status" role="status" aria-live="polite"></div>
+  <div class="fa-lists-add" id="fa-lists-add">
+    <input type="text" id="fa-lists-input" placeholder="Add item…" autocomplete="off" enterkeyhint="done" maxlength="200" />
+    <button type="button" id="fa-lists-add-btn">Add</button>
+  </div>
+  <div class="fa-lists-toolbar">
+    <button type="button" class="fa-lists-clear" id="fa-lists-clear" disabled>Clear completed</button>
+  </div>
+  <div class="fa-lists-scroll" id="fa-lists-list"></div>
+</div>
+
 <script>
 /* Identifiable deploy build — bump Lovelace iframe ?v= separately on HA. */
-const FRAME_BUILD = '20260912-ui6';
+const FRAME_BUILD = '20260912-ui7';
 try { window.FRAME_BUILD = FRAME_BUILD; } catch (e) {}
 const FALLBACK = [
   "/local/family-album/filler_forest.jpg",
@@ -2991,7 +3118,7 @@ function bindHoldDrag(el, storageKey, kind){
 
   const onDown = (ev) => {
     if (typeof hudLayoutEditAllowed === 'function' && !hudLayoutEditAllowed()) return;
-    if (ev.target && ev.target.closest && (ev.target.closest('#sb-exit') || ev.target.closest('#sb-fs') || ev.target.closest('#sb-fit') || ev.target.closest('#sb-hud-gear') || ev.target.closest('#fa-hub-nav') || ev.target.closest('#fa-tasks'))) return;
+    if (ev.target && ev.target.closest && (ev.target.closest('#sb-exit') || ev.target.closest('#sb-fs') || ev.target.closest('#sb-fit') || ev.target.closest('#sb-hud-gear') || ev.target.closest('#fa-hub-nav') || ev.target.closest('#fa-tasks') || ev.target.closest('#fa-lists'))) return;
     // Cal+weather: swipe on day strip / form / + — do not hold-drag the whole card (header/now still drags).
     if (kind === 'calwx' && ev.target && ev.target.closest &&
         ev.target.closest('.cw-days, .cw-day, .cw-evs, .cw-ev, .cw-form, .cw-add, .cw-hint, input, button.cw-add, .cw-toolbar, #cw-add-modal, .cw-add-sheet, #cw-del-modal, .cw-del-sheet')) {
@@ -3358,7 +3485,10 @@ const HOUSE_CAL_ID = '66f073dac1e425814071e46d54f8f167bfbba00bcadcfa267bbbfe2184
 /* ---- Family hub tabs + Tasks (profiles/tasks/rewards JSON; family hub only) ---- */
 const TASK_COMPLETE_WEBHOOK = 'fa_task_done_1f4256b46bfabce7b448f150';
 const TASK_CLAIM_WEBHOOK = 'fa_task_claim_d860215cd82ee7e9193d3eb6';
-const HUB_TABS_ACTIVE = { home:1, week:1, tasks:1 };
+const LIST_ADD_WEBHOOK = 'fa_list_add_a24215ed8fd97a58873ceec5';
+const LIST_TOGGLE_WEBHOOK = 'fa_list_toggle_fafc9febf801c7e74174a613';
+const LIST_CLEAR_WEBHOOK = 'fa_list_clear_6a44c1a51b66832a05b46708';
+const HUB_TABS_ACTIVE = { home:1, week:1, tasks:1, lists:1 };
 let hubTab = 'home';
 const TASKS_STATE = {
   profiles: [],
@@ -3367,6 +3497,17 @@ const TASKS_STATE = {
   rewards: [],
   optimistic: {}, // task_id|profile_id|date -> 'done'|'skipped'
   selectedProfileId: '',
+  statusMsg: '',
+  loaded: false,
+  loadError: '',
+  busy: false
+};
+const LISTS_STATE = {
+  lists: [],
+  selectedListId: '',
+  optimisticDone: {}, // item_id -> bool
+  pendingAdds: {}, // item_id -> {list_id, text}
+  pendingClears: {}, // list_id -> true
   statusMsg: '',
   loaded: false,
   loadError: '',
@@ -3406,7 +3547,7 @@ function setHubTab(tab){
   if (!HUB_TABS_ACTIVE[tab]) return;
   hubTab = tab;
   try {
-    document.documentElement.classList.remove('hub-tab-home','hub-tab-week','hub-tab-tasks');
+    document.documentElement.classList.remove('hub-tab-home','hub-tab-week','hub-tab-tasks','hub-tab-lists');
     document.documentElement.classList.add('hub-tab-' + tab);
   } catch (e) {}
   const nav = document.getElementById('fa-hub-nav');
@@ -3424,9 +3565,18 @@ function setHubTab(tab){
     const show = tab === 'tasks' && IS_FULL_FRAME;
     panel.setAttribute('aria-hidden', show ? 'false' : 'true');
   }
+  const listsPanel = document.getElementById('fa-lists');
+  if (listsPanel) {
+    const showL = tab === 'lists' && IS_FULL_FRAME;
+    listsPanel.setAttribute('aria-hidden', showL ? 'false' : 'true');
+  }
   if (tab === 'tasks') {
     try { renderTasksPanel(); } catch (e) {}
     try { loadTasksData(); } catch (e) {}
+  }
+  if (tab === 'lists') {
+    try { renderListsPanel(); } catch (e) {}
+    try { loadListsData(); } catch (e) {}
   }
   syncHubNavVisibility();
 }
@@ -3880,6 +4030,490 @@ function bindTasksPanelOnce(){
       const p = profileById(id);
       setTasksStatus(p ? ('Acting as ' + p.name) : '');
     }, true);
+  }
+}
+
+
+/* ---- Lists (lists.json + add/toggle/clear webhooks) ---- */
+function itemIsDone(it){
+  if (!it || typeof it !== 'object') return false;
+  if (typeof it.done === 'boolean') return it.done;
+  if (typeof it.checked === 'boolean') return it.checked;
+  return !!(it.done || it.checked);
+}
+
+function normalizeListItem(it){
+  if (!it || typeof it !== 'object' || !it.id) return null;
+  return { id: String(it.id), text: String(it.text || ''), done: !!itemIsDone(it) };
+}
+
+function normalizeLists(data){
+  // Pure JSON normalize — optimistic overlays applied in viewListsForRender().
+  const list = (data && Array.isArray(data.lists)) ? data.lists : [];
+  return list.filter(function(L){ return L && L.id; }).map(function(L){
+    const itemsRaw = Array.isArray(L.items) ? L.items : [];
+    const items = [];
+    for (let i = 0; i < itemsRaw.length; i++) {
+      const n = normalizeListItem(itemsRaw[i]);
+      if (n) items.push(n);
+    }
+    return {
+      id: String(L.id),
+      name: String(L.name || L.id),
+      type: String(L.type || ''),
+      color: String(L.color || '#90CAF9'),
+      items: items
+    };
+  });
+}
+
+function viewListsForRender(){
+  return (LISTS_STATE.lists || []).map(function(L){
+    let items = (L.items || []).map(function(it){
+      let done = !!it.done;
+      if (Object.prototype.hasOwnProperty.call(LISTS_STATE.optimisticDone, it.id)) {
+        done = !!LISTS_STATE.optimisticDone[it.id];
+      }
+      return { id: it.id, text: it.text, done: done };
+    });
+    Object.keys(LISTS_STATE.pendingAdds).forEach(function(pid){
+      const p = LISTS_STATE.pendingAdds[pid];
+      if (!p || p.list_id !== L.id) return;
+      if (items.some(function(x){ return x.id === pid; })) return;
+      items.push({ id: pid, text: String(p.text || ''), done: false });
+    });
+    if (LISTS_STATE.pendingClears[L.id]) {
+      items = items.filter(function(x){ return !x.done; });
+    }
+    return { id: L.id, name: L.name, type: L.type, color: L.color, items: items };
+  });
+}
+
+function viewListById(id){
+  const lists = viewListsForRender();
+  for (let i = 0; i < lists.length; i++) {
+    if (lists[i].id === id) return lists[i];
+  }
+  return null;
+}
+
+function listById(id){
+  for (let i = 0; i < LISTS_STATE.lists.length; i++) {
+    if (LISTS_STATE.lists[i].id === id) return LISTS_STATE.lists[i];
+  }
+  return null;
+}
+
+function ensureSelectedList(){
+  const lists = LISTS_STATE.lists || [];
+  if (!lists.length) {
+    LISTS_STATE.selectedListId = '';
+    return '';
+  }
+  if (LISTS_STATE.selectedListId && listById(LISTS_STATE.selectedListId)) {
+    return LISTS_STATE.selectedListId;
+  }
+  if (listById('l_grocery')) {
+    LISTS_STATE.selectedListId = 'l_grocery';
+    return 'l_grocery';
+  }
+  LISTS_STATE.selectedListId = lists[0].id;
+  return LISTS_STATE.selectedListId;
+}
+
+function setListsStatus(msg){
+  LISTS_STATE.statusMsg = msg || '';
+  const el = document.getElementById('fa-lists-status');
+  if (el) el.textContent = LISTS_STATE.statusMsg;
+}
+
+function newListItemId(){
+  return 'li_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8);
+}
+
+async function loadListsData(){
+  const res = await fetchFaJson('lists.json');
+  LISTS_STATE.lists = normalizeLists(res.data);
+  LISTS_STATE.loaded = true;
+  ensureSelectedList();
+  if (!res.ok || res.empty) {
+    if (!LISTS_STATE.lists.length) {
+      LISTS_STATE.loadError = 'Waiting on HA seed (lists.json)';
+    } else {
+      LISTS_STATE.loadError = '';
+    }
+  } else {
+    LISTS_STATE.loadError = '';
+  }
+  // Drop pending adds that now exist in JSON (id match, or same text on list)
+  Object.keys(LISTS_STATE.pendingAdds).forEach(function(pid){
+    const p = LISTS_STATE.pendingAdds[pid];
+    const L = p && listById(p.list_id);
+    if (!L) return;
+    if ((L.items || []).some(function(x){ return x.id === pid; })) {
+      delete LISTS_STATE.pendingAdds[pid];
+      return;
+    }
+    if ((L.items || []).some(function(x){ return String(x.text) === String(p.text); })) {
+      delete LISTS_STATE.pendingAdds[pid];
+    }
+  });
+  // Drop optimistic done when JSON matches desired state
+  Object.keys(LISTS_STATE.optimisticDone).forEach(function(iid){
+    let found = null;
+    for (let i = 0; i < LISTS_STATE.lists.length; i++) {
+      const items = LISTS_STATE.lists[i].items || [];
+      for (let j = 0; j < items.length; j++) {
+        if (items[j].id === iid) { found = items[j]; break; }
+      }
+      if (found) break;
+    }
+    if (found && !!found.done === !!LISTS_STATE.optimisticDone[iid]) {
+      delete LISTS_STATE.optimisticDone[iid];
+    }
+  });
+  Object.keys(LISTS_STATE.pendingClears).forEach(function(lid){
+    const L = listById(lid);
+    if (L && !(L.items || []).some(function(x){ return x.done; })) {
+      delete LISTS_STATE.pendingClears[lid];
+    }
+  });
+  if (hubTab === 'lists') renderListsPanel();
+  return { listsOk: !!(res.ok && !res.empty), data: res.data };
+}
+
+function renderListPicker(){
+  const el = document.getElementById('fa-lists-picker');
+  if (!el) return;
+  const lists = viewListsForRender();
+  const selected = ensureSelectedList();
+  if (!lists.length) {
+    el.innerHTML = '<span class="fa-chip" style="padding:6px 10px;border-radius:999px;background:rgba(255,255,255,.1)">No lists yet</span>';
+    return;
+  }
+  el.innerHTML = lists.map(function(L){
+    const on = L.id === selected ? ' on' : '';
+    const count = (L.items || []).filter(function(x){ return !x.done; }).length;
+    return '<button type="button" class="fa-list-pick' + on + '" data-list-pick="' + escapeHtml(L.id) + '"' +
+      ' aria-pressed="' + (L.id === selected ? 'true' : 'false') + '">' +
+      '<span class="fa-dot" style="background:' + String(L.color||'#90CAF9').replace(/"/g,'') + '"></span>' +
+      escapeHtml(L.name) +
+      (count ? '<span style="opacity:.75;font-weight:600">' + count + '</span>' : '') +
+      '</button>';
+  }).join('');
+}
+
+function renderListItemRow(it){
+  return '<div class="fa-li' + (it.done ? ' done' : '') + '" data-list-item="' + escapeHtml(it.id) + '" role="button" tabindex="0" aria-pressed="' + (it.done ? 'true' : 'false') + '">' +
+    '<div class="fa-li-check" aria-hidden="true">' + (it.done ? '✓' : '') + '</div>' +
+    '<div class="fa-li-text">' + escapeHtml(it.text || '') + '</div>' +
+    '</div>';
+}
+
+function renderListsPanel(){
+  const listEl = document.getElementById('fa-lists-list');
+  const subEl = document.getElementById('fa-lists-sub');
+  const clearBtn = document.getElementById('fa-lists-clear');
+  const addBtn = document.getElementById('fa-lists-add-btn');
+  renderListPicker();
+  const L = viewListById(ensureSelectedList());
+  if (subEl) {
+    if (L) {
+      const open = (L.items || []).filter(function(x){ return !x.done; }).length;
+      const done = (L.items || []).filter(function(x){ return x.done; }).length;
+      subEl.textContent = L.name + (open || done ? (' · ' + open + ' open' + (done ? (', ' + done + ' done') : '')) : '');
+    } else {
+      subEl.textContent = '';
+    }
+  }
+  if (LISTS_STATE.loadError && !(LISTS_STATE.lists || []).length) {
+    setListsStatus(LISTS_STATE.loadError);
+  } else {
+    setListsStatus(LISTS_STATE.statusMsg || '');
+  }
+  if (addBtn) addBtn.disabled = !!(LISTS_STATE.busy || !L);
+  if (!listEl) return;
+  if (!L) {
+    listEl.innerHTML = '<div class="fa-empty"><div class="big" aria-hidden="true">🧾</div>' +
+      'No lists yet.<br/>HA can seed <code>lists.json</code> anytime.</div>';
+    if (clearBtn) clearBtn.disabled = true;
+    return;
+  }
+  const items = (L.items || []).slice();
+  const openItems = items.filter(function(x){ return !x.done; });
+  const doneItems = items.filter(function(x){ return x.done; });
+  // Checked sink to bottom
+  const ordered = openItems.concat(doneItems);
+  if (clearBtn) clearBtn.disabled = !!(LISTS_STATE.busy || !doneItems.length);
+  if (!ordered.length) {
+    listEl.innerHTML = '<div class="fa-empty"><div class="big" aria-hidden="true">' +
+      (L.type === 'grocery' ? '🛒' : '📝') + '</div>' +
+      escapeHtml(L.name) + ' is empty.<br/>Add something below.</div>';
+    return;
+  }
+  listEl.innerHTML = ordered.map(renderListItemRow).join('');
+}
+
+async function refreshListsAfterWrite(verify){
+  // Re-read lists.json; do not trust HTTP 200 alone.
+  let last = null;
+  for (let i = 0; i < 6; i++) {
+    if (i) await sleepMs(350 + i * 150);
+    last = await loadListsData();
+    try {
+      if (verify && verify()) return { ok:true, attempts:i+1 };
+    } catch (e) {}
+  }
+  return { ok:false, attempts:6, last:last };
+}
+
+async function addListItem(text){
+  text = String(text || '').trim();
+  const listId = ensureSelectedList();
+  if (!listId) {
+    setListsStatus('Pick a list first');
+    return;
+  }
+  if (!text) {
+    setListsStatus('Type an item first');
+    return;
+  }
+  if (!LIST_ADD_WEBHOOK) {
+    setListsStatus('Add webhook missing');
+    return;
+  }
+  if (LISTS_STATE.busy) {
+    setListsStatus('Busy — try again in a moment');
+    return;
+  }
+  const itemId = newListItemId();
+  LISTS_STATE.busy = true;
+  LISTS_STATE.pendingAdds[itemId] = { list_id: listId, text: text };
+  renderListsPanel();
+  setListsStatus('Adding…');
+  try {
+    const body = { list_id: listId, text: text, item_id: itemId };
+    const r = await fetch('/api/webhook/' + LIST_ADD_WEBHOOK, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(body),
+      cache: 'no-store'
+    });
+    if (!(r.ok || r.status === 200 || r.status === 201)) {
+      delete LISTS_STATE.pendingAdds[itemId];
+      renderListsPanel();
+      setListsStatus('Add failed (HTTP ' + r.status + ')');
+      return;
+    }
+    const ver = await refreshListsAfterWrite(function(){
+      const L = listById(listId);
+      if (!L) return false;
+      return (L.items || []).some(function(x){
+        return x.id === itemId || (String(x.text) === text);
+      });
+    });
+    if (ver.ok) {
+      delete LISTS_STATE.pendingAdds[itemId];
+      const inp = document.getElementById('fa-lists-input');
+      if (inp) inp.value = '';
+      setListsStatus('Added');
+    } else {
+      setListsStatus('Posted — waiting for lists.json refresh');
+    }
+    renderListsPanel();
+  } catch (e) {
+    delete LISTS_STATE.pendingAdds[itemId];
+    renderListsPanel();
+    setListsStatus('Add failed (network)');
+  } finally {
+    LISTS_STATE.busy = false;
+    renderListsPanel();
+  }
+}
+
+async function toggleListItem(itemId){
+  const listId = ensureSelectedList();
+  const L = viewListById(listId);
+  if (!L || !itemId) return;
+  let current = null;
+  for (let i = 0; i < (L.items || []).length; i++) {
+    if (L.items[i].id === itemId) { current = L.items[i]; break; }
+  }
+  if (!current) return;
+  if (!LIST_TOGGLE_WEBHOOK) {
+    setListsStatus('Toggle webhook missing');
+    return;
+  }
+  if (LISTS_STATE.busy) {
+    setListsStatus('Busy — try again in a moment');
+    return;
+  }
+  const nextDone = !current.done;
+  LISTS_STATE.busy = true;
+  LISTS_STATE.optimisticDone[itemId] = nextDone;
+  renderListsPanel();
+  setListsStatus(nextDone ? 'Checking…' : 'Unchecking…');
+  try {
+    const body = { list_id: listId, item_id: itemId, done: nextDone };
+    const r = await fetch('/api/webhook/' + LIST_TOGGLE_WEBHOOK, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(body),
+      cache: 'no-store'
+    });
+    if (!(r.ok || r.status === 200 || r.status === 201)) {
+      delete LISTS_STATE.optimisticDone[itemId];
+      await loadListsData();
+      setListsStatus('Toggle failed (HTTP ' + r.status + ')');
+      return;
+    }
+    const ver = await refreshListsAfterWrite(function(){
+      const LL = listById(listId);
+      if (!LL) return false;
+      for (let i = 0; i < (LL.items || []).length; i++) {
+        const it = LL.items[i];
+        if (it.id === itemId) return !!it.done === !!nextDone;
+      }
+      return false;
+    });
+    if (ver.ok) {
+      delete LISTS_STATE.optimisticDone[itemId];
+      setListsStatus(nextDone ? 'Done' : 'Reopened');
+    } else {
+      setListsStatus('Posted — waiting for lists.json refresh');
+    }
+    renderListsPanel();
+  } catch (e) {
+    delete LISTS_STATE.optimisticDone[itemId];
+    await loadListsData();
+    setListsStatus('Toggle failed (network)');
+  } finally {
+    LISTS_STATE.busy = false;
+    renderListsPanel();
+  }
+}
+
+async function clearDoneListItems(){
+  const listId = ensureSelectedList();
+  const L = viewListById(listId);
+  if (!L) return;
+  const doneCount = (L.items || []).filter(function(x){ return x.done; }).length;
+  if (!doneCount) {
+    setListsStatus('Nothing completed to clear');
+    return;
+  }
+  if (!LIST_CLEAR_WEBHOOK) {
+    setListsStatus('Clear webhook missing');
+    return;
+  }
+  if (LISTS_STATE.busy) {
+    setListsStatus('Busy — try again in a moment');
+    return;
+  }
+  LISTS_STATE.busy = true;
+  LISTS_STATE.pendingClears[listId] = true;
+  renderListsPanel();
+  setListsStatus('Clearing completed…');
+  try {
+    const body = { list_id: listId };
+    const r = await fetch('/api/webhook/' + LIST_CLEAR_WEBHOOK, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(body),
+      cache: 'no-store'
+    });
+    if (!(r.ok || r.status === 200 || r.status === 201)) {
+      delete LISTS_STATE.pendingClears[listId];
+      await loadListsData();
+      setListsStatus('Clear failed (HTTP ' + r.status + ')');
+      return;
+    }
+    const ver = await refreshListsAfterWrite(function(){
+      const LL = listById(listId);
+      if (!LL) return false;
+      return !(LL.items || []).some(function(x){ return x.done; });
+    });
+    if (ver.ok) {
+      delete LISTS_STATE.pendingClears[listId];
+      setListsStatus('Cleared completed');
+    } else {
+      setListsStatus('Posted — waiting for lists.json refresh');
+    }
+    renderListsPanel();
+  } catch (e) {
+    delete LISTS_STATE.pendingClears[listId];
+    await loadListsData();
+    setListsStatus('Clear failed (network)');
+  } finally {
+    LISTS_STATE.busy = false;
+    renderListsPanel();
+  }
+}
+
+function bindListsPanelOnce(){
+  const picker = document.getElementById('fa-lists-picker');
+  const listEl = document.getElementById('fa-lists-list');
+  const addWrap = document.getElementById('fa-lists-add');
+  const addBtn = document.getElementById('fa-lists-add-btn');
+  const input = document.getElementById('fa-lists-input');
+  const clearBtn = document.getElementById('fa-lists-clear');
+
+  if (picker && !picker._bound) {
+    picker._bound = true;
+    picker.addEventListener('click', function(ev){
+      const btn = ev.target && ev.target.closest ? ev.target.closest('[data-list-pick]') : null;
+      if (!btn) return;
+      try { ev.preventDefault(); ev.stopPropagation(); } catch (e) {}
+      const id = btn.getAttribute('data-list-pick');
+      if (!id || !listById(id)) return;
+      LISTS_STATE.selectedListId = id;
+      renderListsPanel();
+      const L = listById(id);
+      setListsStatus(L ? ('Showing ' + L.name) : '');
+    }, false);
+  }
+
+  if (listEl && !listEl._bound) {
+    listEl._bound = true;
+    listEl.addEventListener('click', function(ev){
+      const row = ev.target && ev.target.closest ? ev.target.closest('[data-list-item]') : null;
+      if (!row) return;
+      try { ev.preventDefault(); ev.stopPropagation(); } catch (e) {}
+      const id = row.getAttribute('data-list-item');
+      if (id) toggleListItem(id);
+    }, false);
+  }
+
+  // Bubble phase ONLY — avoid capture-phase stopPropagation eating iPad taps (Save bug).
+  if (addWrap && !addWrap._boundStop) {
+    addWrap._boundStop = true;
+    ['pointerdown','touchstart','click','keydown','keyup','keypress','input'].forEach(function(evt){
+      addWrap.addEventListener(evt, function(ev){ try { ev.stopPropagation(); } catch (e) {} }, false);
+    });
+  }
+  if (addBtn && !addBtn._bound) {
+    addBtn._bound = true;
+    addBtn.addEventListener('click', function(ev){
+      try { ev.preventDefault(); ev.stopPropagation(); } catch (e) {}
+      const val = input ? input.value : '';
+      addListItem(val);
+    }, false);
+  }
+  if (input && !input._bound) {
+    input._bound = true;
+    input.addEventListener('keydown', function(ev){
+      if (ev.key === 'Enter') {
+        try { ev.preventDefault(); ev.stopPropagation(); } catch (e) {}
+        addListItem(input.value);
+      }
+    }, false);
+  }
+  if (clearBtn && !clearBtn._bound) {
+    clearBtn._bound = true;
+    clearBtn.addEventListener('click', function(ev){
+      try { ev.preventDefault(); ev.stopPropagation(); } catch (e) {}
+      clearDoneListItems();
+    }, false);
   }
 }
 
@@ -5699,7 +6333,7 @@ box.addEventListener('touchstart', (e) => {
   if (!standbyOn) return;
   // Ignore if Exit / FS / Fit control
   const tgt = e.target;
-  if (tgt && (tgt.id === 'sb-exit' || tgt.id === 'sb-fs' || tgt.id === 'sb-fit' || tgt.id === 'sb-hud-gear' || (tgt.closest && tgt.closest('#sb-exit,#sb-fs,#sb-fit,#sb-hud-gear,#fa-hub-nav,#fa-tasks,#cw-add-modal,#cw-del-modal')))) return;
+  if (tgt && (tgt.id === 'sb-exit' || tgt.id === 'sb-fs' || tgt.id === 'sb-fit' || tgt.id === 'sb-hud-gear' || (tgt.closest && tgt.closest('#sb-exit,#sb-fs,#sb-fit,#sb-hud-gear,#fa-hub-nav,#fa-tasks,#fa-lists,#cw-add-modal,#cw-del-modal')))) return;
 
   if (e.touches.length >= 2) {
     if (shouldPhotoPinch(e)) {
@@ -5754,7 +6388,7 @@ document.addEventListener('touchstart', (e) => {
   if (!standbyOn) return;
   if (!e.touches || e.touches.length < 2) return;
   const tgt = e.target;
-  if (tgt && tgt.closest && tgt.closest('#sb-exit,#sb-fs,#sb-fit,#sb-hud-gear,#fa-hub-nav,#fa-tasks,#cw-add-modal,#cw-del-modal')) return;
+  if (tgt && tgt.closest && tgt.closest('#sb-exit,#sb-fs,#sb-fit,#sb-hud-gear,#fa-hub-nav,#fa-tasks,#fa-lists,#cw-add-modal,#cw-del-modal')) return;
   if (touchOnResizeHandle(e)) return;
   if (!shouldPhotoPinch(e)) return;
   uzOnPinchStart(e);
@@ -6029,6 +6663,7 @@ function startSlideshow(){
   try { bindHudGearOnce(); syncHudEditChrome(); } catch (e) {}
   try { bindHubNavOnce(); } catch (e) {}
   try { bindTasksPanelOnce(); } catch (e) {}
+  try { bindListsPanelOnce(); } catch (e) {}
   try { syncHubNavVisibility(); } catch (e) {}
   // legacy week/forecast drag disabled — combined #sb-calweather
   try { if (typeof loadLayout === 'function') loadLayout(); } catch (e) {}

@@ -1,0 +1,6 @@
+{
+  "lists": [
+    { "id": "l_grocery", "name": "Grocery", "type": "grocery", "color": "#4CAF50", "items": [] },
+    { "id": "l_todo", "name": "To-Do", "type": "todo", "color": "#2196F3", "items": [] }
+  ]
+}

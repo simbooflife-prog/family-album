@@ -9,7 +9,7 @@ Internal build id lives in `frame.html` as `FRAME_BUILD` (also in the HTML comme
 
 1. Edit in git (`main` on this repo). Commit + push.
 2. Copy changed files **only** to SOT: `/homeassistant/www/family-album`.
-3. Bump every Lovelace iframe `?v=` (Overview + digital-frame). Suggested next: match `FRAME_BUILD` (currently `20260912-ui6`).
+3. Bump every Lovelace iframe `?v=` (Overview + digital-frame). Suggested next: match `FRAME_BUILD` (currently `20260912-ui7`).
 4. Verify checksums (see below). If `/config/www/family-album` still exists, md5 **both** paths — they must match (symlink).
 5. Hard refresh the frame (tablet / companion app / browser).
 
@@ -51,7 +51,7 @@ HA and tablets cache `frame.html` hard. Changing `FRAME_BUILD` inside the file i
 
 - Overview iframe: bump `?v=`
 - digital-frame dashboard iframe: bump `?v=`
-- Example: `/local/family-album/frame.html?v=20260912-ui6`
+- Example: `/local/family-album/frame.html?v=20260912-ui7`
 
 ## Calendar webhooks (create + delete)
 
@@ -91,10 +91,28 @@ Same-origin from the frame iframe on HA:
 
 **Do not trust HTTP 200 alone:** after POST, the frame re-fetches `tasks.json` + `profiles.json` (stars) with a short retry. Failures show in the Tasks status line. Profile picker uses selected profile (`p_haya` when only/available).
 
+## Lists webhooks (add + toggle + clear) — ui7
+
+Frame reads (defensive if 404/empty):
+
+| File | Role |
+| --- | --- |
+| `/local/family-album/lists.json` | `{ lists: [{ id, name, type, color, items: [{ id, text, done }] }] }` (`checked` accepted as alias for `done`) |
+
+Same-origin from the frame iframe on HA:
+
+| Action | Method | Path | Body |
+| --- | --- | --- | --- |
+| Add item | `POST` | `/api/webhook/fa_list_add_a24215ed8fd97a58873ceec5` | `{ list_id, text, item_id? }` |
+| Toggle done | `POST` | `/api/webhook/fa_list_toggle_fafc9febf801c7e74174a613` | `{ list_id, item_id, done? }` |
+| Clear completed | `POST` | `/api/webhook/fa_list_clear_6a44c1a51b66832a05b46708` | `{ list_id }` |
+
+**Do not trust HTTP 200 alone:** after POST, the frame re-fetches `lists.json` with a short retry. Failures show in the Lists status line. Checked items sink to the bottom (strikethrough).
+
 ## Hub bottom nav
 
 - **Overview mini** (no `?standby=1`): hub nav **hidden** — guests see photo frame only (family hub disguise; no house controls).
-- **Full digital-frame** (`?standby=1`): bottom tabs Home | Week | Tasks (+ muted soon: Lists, Meals, Board, Fun, Settings).
+- **Full digital-frame** (`?standby=1`): bottom tabs Home | Week | Tasks | Lists (+ muted soon: Meals, Board, Fun, Settings).
 
 ## Do not
 

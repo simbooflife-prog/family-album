@@ -24,12 +24,12 @@ Live URL base:
 https://1loiy6aum6qt4x1pp4isn1o6fbott58q.ui.nabu.casa/local/family-album/
 ```
 
-Current in-file `FRAME_BUILD`: `20260912-ui5` (bump Lovelace `?v=` on HA to match on deploy).
+Current in-file `FRAME_BUILD`: `20260912-ui7` (bump Lovelace `?v=` on HA to match on deploy).
 
 Example:
 
 ```
-/local/family-album/frame.html?v=20260912-ui5
+/local/family-album/frame.html?v=20260912-ui7
 ```
 
 ## Symlink — do not treat as a second tree
@@ -70,6 +70,7 @@ Fetched from live Nabu Casa `/local/family-album/` on 2026-09-12 (no auth requir
 | `profiles.json` | Family profiles (colors, stars, role) |
 | `tasks.json` | Chores / routines + completions |
 | `rewards.json` | Star rewards catalog |
+| `lists.json` | Grocery / To-Do (+ other) lists |
 
 `current.json`, standalone CSS/JS, and an HA-side README were **not** present (HTTP 404). CSS and JS live inside `frame.html`.
 
@@ -83,7 +84,7 @@ Build in this order:
 
 1. **Calendar** — week strip, add-event, delete-event (verified), swipe-weeks (in progress on the live frame)
 2. **Tasks** — tab + complete/claim HA webhooks (ui6); profile picker + JSON refresh verify
-3. **Lists**
+3. **Lists** — tab + add/toggle/clear HA webhooks (ui7); list picker + JSON refresh verify
 4. **Meals + recipes**
 5. **Message board**
 6. **Child lock + sleep**
