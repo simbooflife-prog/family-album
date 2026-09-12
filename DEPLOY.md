@@ -9,7 +9,7 @@ Internal build id lives in `frame.html` as `FRAME_BUILD` (also in the HTML comme
 
 1. Edit in git (`main` on this repo). Commit + push.
 2. Copy changed files **only** to SOT: `/homeassistant/www/family-album`.
-3. Bump every Lovelace iframe `?v=` (Overview + digital-frame). Suggested next: match `FRAME_BUILD` (currently `20260912-ui1`).
+3. Bump every Lovelace iframe `?v=` (Overview + digital-frame). Suggested next: match `FRAME_BUILD` (currently `20260912-ui2`).
 4. Verify checksums (see below). If `/config/www/family-album` still exists, md5 **both** paths — they must match (symlink).
 5. Hard refresh the frame (tablet / companion app / browser).
 
@@ -51,7 +51,7 @@ HA and tablets cache `frame.html` hard. Changing `FRAME_BUILD` inside the file i
 
 - Overview iframe: bump `?v=`
 - digital-frame dashboard iframe: bump `?v=`
-- Example: `/local/family-album/frame.html?v=20260912-ui1`
+- Example: `/local/family-album/frame.html?v=20260912-ui2`
 
 ## Do not
 

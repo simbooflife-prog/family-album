@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black"/>
 <title>Family Album Frame</title>
-<!-- frame FRAME_BUILD=20260912-ui1 v=20260912-ui1 (bump Lovelace ?v= on HA deploy) square-stage 1:1 photo-only-zoom hud-fixed gesture-lock layout-guides-edit-only snap-align hud-clock no-pill drag-clock calweather-combined swipe-weeks add-event week.json forecast.json preserve-add-modal-input -->
+<!-- frame FRAME_BUILD=20260912-ui2 v=20260912-ui2 (bump Lovelace ?v= on HA deploy) square-stage 1:1 photo-only-zoom hud-fixed gesture-lock layout-guides-edit-only snap-align hud-clock no-pill drag-clock calweather-combined swipe-weeks add-event week.json forecast.json preserve-add-modal-input -->
 <style>
   html,body{margin:0;height:100%;background:#0a1220;overflow:hidden;touch-action:manipulation;-webkit-user-select:none;user-select:none}
   html.standby-page,html.standby-page body{background:#000}
@@ -1016,7 +1016,7 @@
 
 <script>
 /* Identifiable deploy build — bump Lovelace iframe ?v= separately on HA. */
-const FRAME_BUILD = '20260912-ui1';
+const FRAME_BUILD = '20260912-ui2';
 try { window.FRAME_BUILD = FRAME_BUILD; } catch (e) {}
 const FALLBACK = [
   "/local/family-album/filler_forest.jpg",
@@ -3378,7 +3378,8 @@ async function submitCalwxEvent(title, date, time){
     title: String(title||'').trim().slice(0,120),
     date: String(date||'').slice(0,10),
     time: String(time||'').trim(),
-    duration_minutes: 60
+    duration_minutes: 60,
+    calendar_id: HOUSE_CAL_ID
   };
   if (!body.title || body.date.length !== 10) return {ok:false, error:'need_title_date'};
   // Prefer HA webhook (works from HA frontend iframe same-origin).
