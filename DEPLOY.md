@@ -9,7 +9,7 @@ Internal build id lives in `frame.html` as `FRAME_BUILD` (also in the HTML comme
 
 1. Edit in git (`main` on this repo). Commit + push.
 2. Copy changed files **only** to SOT: `/homeassistant/www/family-album`.
-3. Bump every Lovelace iframe `?v=` (Overview + digital-frame). Suggested next: match `FRAME_BUILD` (currently `20260912-ui10`).
+3. Bump every Lovelace iframe `?v=` (Overview + digital-frame). Suggested next: match `FRAME_BUILD` (currently `20260912-ui11`).
 4. Verify checksums (see below). If `/config/www/family-album` still exists, md5 **both** paths — they must match (symlink).
 5. Hard refresh the frame (tablet / companion app / browser).
 
@@ -51,7 +51,7 @@ HA and tablets cache `frame.html` hard. Changing `FRAME_BUILD` inside the file i
 
 - Overview iframe: bump `?v=`
 - digital-frame dashboard iframe: bump `?v=`
-- Example: `/local/family-album/frame.html?v=20260912-ui9`
+- Example: `/local/family-album/frame.html?v=20260912-ui11`
 
 ## Calendar webhooks (create + delete)
 
@@ -166,10 +166,31 @@ Same-origin from the frame iframe on HA:
 
 **Do not trust HTTP 200 alone:** after update POST, re-fetch `settings.json`. After verify PIN, poll `last_pin_ok.json`. UI never displays the raw PIN — only enabled toggle + set/change fields. When `pin_enabled` and a PIN is already set, opening Settings or gear layout-edit requires PIN (first-time set is free). Sleep window dims via overlay (`sleep.dim`); tap wakes ~45s. Idle returns to Home after `idle_home_seconds`.
 
+
+
+## Fun games webhooks (score) — ui11
+
+Frame reads (defensive if 404/empty):
+
+| File | Role |
+| --- | --- |
+| `/local/family-album/games_state.json` | `{ games: { tictactoe:{wins,draws}, memory:{best_moves,best_time_s}, word:{streak,last_word} }, last_played }` |
+| `/local/family-album/settings.json` | `fun_unlocked` gates the Fun tab content |
+
+Same-origin from the frame iframe on HA:
+
+| Action | Method | Path | Body |
+| --- | --- | --- | --- |
+| Post score | `POST` | `/api/webhook/fa_game_score_9106b1308a464ef5d90b4a5a` | `{ game, profile_id?, payload }` where `game` is `tictactoe`\|`memory`\|`word` |
+
+**Payload examples:** tictactoe `{ result, winner, mode, mark }`; memory `{ moves, time_s }`; word `{ won, word, guesses }`.
+
+**Do not trust HTTP 200 alone:** after POST, the frame re-fetches `games_state.json` with a short retry. When `fun_unlocked` is false, Fun shows a locked message (enable in Settings). Profile picker reuses the Tasks selected profile when available. Overview mini unchanged (hub nav hidden).
+
 ## Hub bottom nav
 
 - **Overview mini** (no `?standby=1`): hub nav **hidden** — guests see photo frame only (family hub disguise; no house controls).
-- **Full digital-frame** (`?standby=1`): bottom tabs Home | Week | Tasks | Lists | Meals | Board (+ muted soon: Fun). Settings enabled (ui10).
+- **Full digital-frame** (`?standby=1`): bottom tabs Home | Week | Tasks | Lists | Meals | Board | Fun | Settings (ui11). Fun gated by `fun_unlocked`.
 
 ## Do not
 

@@ -1,0 +1,8 @@
+{
+  "games": {
+    "tictactoe": { "wins": {}, "draws": 0 },
+    "memory": { "best_moves": {}, "best_time_s": {} },
+    "word": { "streak": {}, "last_word": "" }
+  },
+  "last_played": null
+}

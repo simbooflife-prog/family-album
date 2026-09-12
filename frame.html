@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black"/>
 <title>Family Album Frame</title>
-<!-- frame FRAME_BUILD=20260912-ui10 v=20260912-ui10 (bump Lovelace ?v= on HA deploy) square-stage 1:1 photo-only-zoom hud-fixed gesture-lock layout-guides-edit-only snap-align hud-clock no-pill drag-clock calweather-combined swipe-weeks add-event delete-event week.json forecast.json preserve-add-modal-input overview-layout-lock gear-edit-mode save-touch-fix tasks-tab-shell hub-bottom-nav tasks-webhooks-claim-complete profile-picker lists-tab lists-webhooks-add-toggle-clear meals-tab meals-webhooks-set-clear-upsert board-tab board-webhooks-add-delete-pin settings-tab settings-pin-sleep-idle -->
+<!-- frame FRAME_BUILD=20260912-ui11 v=20260912-ui11 (bump Lovelace ?v= on HA deploy) square-stage 1:1 photo-only-zoom hud-fixed gesture-lock layout-guides-edit-only snap-align hud-clock no-pill drag-clock calweather-combined swipe-weeks add-event delete-event week.json forecast.json preserve-add-modal-input overview-layout-lock gear-edit-mode save-touch-fix tasks-tab-shell hub-bottom-nav tasks-webhooks-claim-complete profile-picker lists-tab lists-webhooks-add-toggle-clear meals-tab meals-webhooks-set-clear-upsert board-tab board-webhooks-add-delete-pin settings-tab settings-pin-sleep-idle fun-tab-games fun-unlocked-gate games_state.json -->
 <style>
   html,body{margin:0;height:100%;background:#0a1220;overflow:hidden;touch-action:manipulation;-webkit-user-select:none;user-select:none}
   html.standby-page,html.standby-page body{background:#000}
@@ -1624,6 +1624,168 @@
   html.hub-tab-board #sb-forecast,
   html.hub-tab-board #sb-clock{opacity:.18;pointer-events:none}
 
+
+  /* ---- Fun / games panel ---- */
+  #fa-fun{
+    position:fixed;inset:0;z-index:2147482900;
+    display:none;flex-direction:column;
+    padding:max(12px,env(safe-area-inset-top)) 14px calc(72px + env(safe-area-inset-bottom)) 14px;
+    box-sizing:border-box;
+    background:rgba(6,10,18,.92);
+    backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+    color:#fff;pointer-events:auto;touch-action:manipulation;
+    -webkit-user-select:none;user-select:none;
+  }
+  html.hub-tab-fun #fa-fun{display:flex}
+  html.overview-mini #fa-fun{display:none!important}
+  #fa-fun .fa-fun-head{
+    display:flex;align-items:baseline;justify-content:space-between;gap:12px;
+    margin:0 0 8px;flex:0 0 auto;
+  }
+  #fa-fun .fa-fun-head h2{
+    margin:0;font:800 22px/1.15 -apple-system,sans-serif;letter-spacing:.02em;
+  }
+  #fa-fun .fa-fun-sub{
+    margin:0;font:600 12px/1.2 -apple-system,sans-serif;opacity:.65;
+  }
+  #fa-fun .fa-fun-status{
+    min-height:18px;margin:0 0 8px;font:600 12px/1.3 -apple-system,sans-serif;
+    color:rgba(180,210,255,.9);
+  }
+  #fa-fun .fa-fun-profile{
+    display:flex;flex-wrap:wrap;gap:8px;margin:0 0 10px;flex:0 0 auto;
+  }
+  #fa-fun .fa-fun-profile .fa-profile-btn{
+    display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 14px;
+    border-radius:999px;cursor:pointer;
+    border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.08);
+    color:#fff;font:700 14px/1 -apple-system,sans-serif;
+    -webkit-tap-highlight-color:transparent;
+  }
+  #fa-fun .fa-fun-profile .fa-profile-btn.on{
+    background:rgba(90,120,220,.45);border-color:rgba(160,190,255,.75);
+    box-shadow:0 0 0 2px rgba(120,180,255,.35);
+  }
+  #fa-fun .fa-fun-profile .fa-dot{width:12px;height:12px;border-radius:50%;display:inline-block}
+  #fa-fun .fa-fun-scroll{
+    flex:1 1 auto;min-height:0;overflow:auto;-webkit-overflow-scrolling:touch;
+    padding-bottom:12px;
+  }
+  #fa-fun .fa-fun-locked{
+    margin:36px 16px;text-align:center;padding:28px 18px;border-radius:18px;
+    background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);
+  }
+  #fa-fun .fa-fun-locked .big{font-size:42px;line-height:1.2;margin-bottom:10px}
+  #fa-fun .fa-fun-locked h3{margin:0 0 8px;font:800 20px/1.25 -apple-system,sans-serif}
+  #fa-fun .fa-fun-locked p{margin:0;font:600 15px/1.45 -apple-system,sans-serif;opacity:.78}
+  #fa-fun .fa-game-cards{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;
+  }
+  #fa-fun .fa-game-card{
+    display:flex;flex-direction:column;align-items:flex-start;gap:8px;
+    min-height:120px;padding:16px;border-radius:16px;cursor:pointer;text-align:left;
+    border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.08);
+    color:#fff;-webkit-tap-highlight-color:transparent;
+  }
+  #fa-fun .fa-game-card:active{transform:scale(.97)}
+  #fa-fun .fa-game-card .ico{font-size:32px;line-height:1}
+  #fa-fun .fa-game-card .title{font:800 17px/1.2 -apple-system,sans-serif}
+  #fa-fun .fa-game-card .hint{font:600 12px/1.35 -apple-system,sans-serif;opacity:.7}
+  #fa-fun .fa-game-view{display:none;flex-direction:column;gap:10px;min-height:100%}
+  #fa-fun .fa-game-view.on{display:flex}
+  #fa-fun .fa-game-toolbar{
+    display:flex;flex-wrap:wrap;align-items:center;gap:8px;flex:0 0 auto;
+  }
+  #fa-fun .fa-game-toolbar button,
+  #fa-fun .fa-fun-btn{
+    min-height:44px;padding:0 14px;border-radius:12px;cursor:pointer;
+    border:1px solid rgba(255,255,255,.28);background:rgba(255,255,255,.1);color:#fff;
+    font:700 14px/1 -apple-system,sans-serif;-webkit-tap-highlight-color:transparent;
+  }
+  #fa-fun .fa-fun-btn.primary,
+  #fa-fun .fa-game-toolbar button.primary{
+    background:rgba(80,140,255,.55);border-color:rgba(140,180,255,.7);
+  }
+  #fa-fun .fa-fun-btn:active,
+  #fa-fun .fa-game-toolbar button:active{transform:scale(.96)}
+  #fa-fun .fa-fun-btn[disabled],
+  #fa-fun .fa-game-toolbar button[disabled]{opacity:.45;pointer-events:none}
+  #fa-fun .fa-game-title{
+    flex:1 1 auto;font:800 18px/1.2 -apple-system,sans-serif;min-width:0;
+  }
+  #fa-fun .fa-game-meta{
+    font:600 13px/1.3 -apple-system,sans-serif;opacity:.8;min-height:18px;
+  }
+  #fa-fun .fa-ttt-board{
+    display:grid;grid-template-columns:repeat(3,1fr);gap:10px;
+    width:min(100%,360px);margin:8px auto;aspect-ratio:1;
+  }
+  #fa-fun .fa-ttt-cell{
+    border-radius:16px;border:2px solid rgba(255,255,255,.22);
+    background:rgba(0,0,0,.28);color:#fff;font:800 42px/1 -apple-system,sans-serif;
+    cursor:pointer;-webkit-tap-highlight-color:transparent;
+    display:flex;align-items:center;justify-content:center;
+  }
+  #fa-fun .fa-ttt-cell:active{transform:scale(.96)}
+  #fa-fun .fa-ttt-cell.win{background:rgba(76,175,80,.35);border-color:rgba(129,199,132,.85)}
+  #fa-fun .fa-ttt-modes{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+  #fa-fun .fa-mem-board{
+    display:grid;gap:10px;width:min(100%,420px);margin:8px auto;
+  }
+  #fa-fun .fa-mem-card{
+    aspect-ratio:1;border-radius:14px;cursor:pointer;
+    border:2px solid rgba(255,255,255,.2);background:rgba(40,60,110,.55);
+    color:#fff;font:800 28px/1 -apple-system,sans-serif;
+    display:flex;align-items:center;justify-content:center;
+    -webkit-tap-highlight-color:transparent;
+    transition:transform .12s ease,background .12s ease;
+  }
+  #fa-fun .fa-mem-card:active{transform:scale(.96)}
+  #fa-fun .fa-mem-card.up,
+  #fa-fun .fa-mem-card.matched{
+    background:rgba(255,255,255,.14);border-color:rgba(180,200,255,.55);
+  }
+  #fa-fun .fa-mem-card.matched{opacity:.72;background:rgba(76,175,80,.28);border-color:rgba(129,199,132,.7)}
+  #fa-fun .fa-word-row{
+    display:flex;gap:8px;justify-content:center;margin:0 0 8px;
+  }
+  #fa-fun .fa-word-cell{
+    width:48px;height:48px;border-radius:10px;
+    border:2px solid rgba(255,255,255,.28);background:rgba(0,0,0,.28);
+    display:flex;align-items:center;justify-content:center;
+    font:800 22px/1 -apple-system,sans-serif;text-transform:uppercase;
+  }
+  #fa-fun .fa-word-cell.correct{background:rgba(76,175,80,.55);border-color:rgba(129,199,132,.9)}
+  #fa-fun .fa-word-cell.present{background:rgba(255,193,7,.45);border-color:rgba(255,213,79,.85)}
+  #fa-fun .fa-word-cell.absent{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.2);opacity:.75}
+  #fa-fun .fa-word-keys{
+    display:flex;flex-direction:column;gap:8px;margin-top:10px;align-items:center;
+  }
+  #fa-fun .fa-word-keyrow{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+  #fa-fun .fa-word-key{
+    min-width:32px;min-height:44px;padding:0 10px;border-radius:10px;cursor:pointer;
+    border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.1);color:#fff;
+    font:800 14px/1 -apple-system,sans-serif;text-transform:uppercase;
+    -webkit-tap-highlight-color:transparent;
+  }
+  #fa-fun .fa-word-key.wide{min-width:64px;font-size:12px}
+  #fa-fun .fa-word-key.correct{background:rgba(76,175,80,.55)}
+  #fa-fun .fa-word-key.present{background:rgba(255,193,7,.4)}
+  #fa-fun .fa-word-key.absent{opacity:.4}
+  #fa-fun .fa-stats{
+    margin-top:8px;padding:12px;border-radius:14px;
+    background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);
+    font:600 13px/1.4 -apple-system,sans-serif;opacity:.9;
+  }
+  #fa-fun .fa-empty{
+    margin:28px 12px;text-align:center;opacity:.72;
+    font:600 15px/1.45 -apple-system,sans-serif;color:#fff;
+  }
+  html.hub-tab-fun #sb-calweather,
+  html.hub-tab-fun #sb-week,
+  html.hub-tab-fun #sb-forecast,
+  html.hub-tab-fun #sb-clock{opacity:.18;pointer-events:none}
+
   /* ---- Settings panel ---- */
   #fa-settings{
     position:fixed;inset:0;z-index:2147482900;
@@ -1917,7 +2079,7 @@
   <button type="button" class="fa-tab" data-tab="lists"><span class="ico" aria-hidden="true">🧾</span><span>Lists</span></button>
   <button type="button" class="fa-tab" data-tab="meals"><span class="ico" aria-hidden="true">🍽️</span><span>Meals</span></button>
   <button type="button" class="fa-tab" data-tab="board"><span class="ico" aria-hidden="true">📌</span><span>Board</span></button>
-  <button type="button" class="fa-tab soon" data-tab="fun" disabled aria-disabled="true"><span class="ico" aria-hidden="true">🎮</span><span>Fun</span><span class="soon-tag">soon</span></button>
+  <button type="button" class="fa-tab" data-tab="fun"><span class="ico" aria-hidden="true">🎮</span><span>Fun</span></button>
   <button type="button" class="fa-tab" data-tab="settings"><span class="ico" aria-hidden="true">⚙️</span><span>Settings</span></button>
 </nav>
 <div id="fa-tasks" aria-hidden="true">
@@ -1980,6 +2142,16 @@
   <div class="fa-board-scroll" id="fa-board-list"></div>
 </div>
 
+
+<div id="fa-fun" aria-hidden="true">
+  <div class="fa-fun-head">
+    <h2>Fun</h2>
+    <p class="fa-fun-sub" id="fa-fun-sub">Family games</p>
+  </div>
+  <div class="fa-fun-profile" id="fa-fun-profile" aria-label="Active profile"></div>
+  <div class="fa-fun-status" id="fa-fun-status" role="status" aria-live="polite"></div>
+  <div class="fa-fun-scroll" id="fa-fun-body"></div>
+</div>
 
 <div id="fa-settings" aria-hidden="true">
   <div class="fa-settings-head">
@@ -2060,7 +2232,7 @@
     <div class="fa-set-card">
       <div class="fa-set-row">
         <div class="fa-set-label">Unlock Fun tab
-          <span class="fa-set-hint">Gates games later (tab still “soon”)</span>
+          <span class="fa-set-hint">When off, Fun tab shows a locked message</span>
         </div>
         <button type="button" class="fa-toggle" id="fa-set-fun-unlocked" aria-pressed="false" aria-label="Unlock Fun tab"></button>
       </div>
@@ -2102,7 +2274,7 @@
 
 <script>
 /* Identifiable deploy build — bump Lovelace iframe ?v= separately on HA. */
-const FRAME_BUILD = '20260912-ui10';
+const FRAME_BUILD = '20260912-ui11';
 try { window.FRAME_BUILD = FRAME_BUILD; } catch (e) {}
 const FALLBACK = [
   "/local/family-album/filler_forest.jpg",
@@ -3772,7 +3944,7 @@ function bindHoldDrag(el, storageKey, kind){
 
   const onDown = (ev) => {
     if (typeof hudLayoutEditAllowed === 'function' && !hudLayoutEditAllowed()) return;
-    if (ev.target && ev.target.closest && (ev.target.closest('#sb-exit') || ev.target.closest('#sb-fs') || ev.target.closest('#sb-fit') || ev.target.closest('#sb-hud-gear') || ev.target.closest('#fa-hub-nav') || ev.target.closest('#fa-tasks') || ev.target.closest('#fa-lists') || ev.target.closest('#fa-meals') || ev.target.closest('#fa-meal-slot-modal') || ev.target.closest('#fa-board') || ev.target.closest('#fa-settings') || ev.target.closest('#fa-pin-modal') || ev.target.closest('#fa-sleep-veil'))) return;
+    if (ev.target && ev.target.closest && (ev.target.closest('#sb-exit') || ev.target.closest('#sb-fs') || ev.target.closest('#sb-fit') || ev.target.closest('#sb-hud-gear') || ev.target.closest('#fa-hub-nav') || ev.target.closest('#fa-tasks') || ev.target.closest('#fa-lists') || ev.target.closest('#fa-meals') || ev.target.closest('#fa-meal-slot-modal') || ev.target.closest('#fa-board') || ev.target.closest('#fa-fun') || ev.target.closest('#fa-settings') || ev.target.closest('#fa-pin-modal') || ev.target.closest('#fa-sleep-veil'))) return;
     // Cal+weather: swipe on day strip / form / + — do not hold-drag the whole card (header/now still drags).
     if (kind === 'calwx' && ev.target && ev.target.closest &&
         ev.target.closest('.cw-days, .cw-day, .cw-evs, .cw-ev, .cw-form, .cw-add, .cw-hint, input, button.cw-add, .cw-toolbar, #cw-add-modal, .cw-add-sheet, #cw-del-modal, .cw-del-sheet')) {
@@ -4150,7 +4322,8 @@ const MSG_DEL_WEBHOOK = 'fa_msg_del_c2ba06f28b669bf17fcca0e4';
 const MSG_PIN_WEBHOOK = 'fa_msg_pin_0e009ff24c7aa7391526aac4';
 const SET_UPD_WEBHOOK = 'fa_set_upd_34332b41ce03c5d48a94a605';
 const SET_PIN_WEBHOOK = 'fa_set_pin_9959ced132bab609265c8787';
-const HUB_TABS_ACTIVE = { home:1, week:1, tasks:1, lists:1, meals:1, board:1, settings:1 };
+const GAME_SCORE_WEBHOOK = 'fa_game_score_9106b1308a464ef5d90b4a5a';
+const HUB_TABS_ACTIVE = { home:1, week:1, tasks:1, lists:1, meals:1, board:1, fun:1, settings:1 };
 let hubTab = 'home';
 const TASKS_STATE = {
   profiles: [],
@@ -4224,6 +4397,22 @@ const SETTINGS_STATE = {
   sleepAwakeUntil: 0, // brief wake from sleep veil
   pendingPinAction: null // { type:'settings'|'gear' }
 };
+const FUN_STATE = {
+  games: {
+    tictactoe: { wins: {}, draws: 0 },
+    memory: { best_moves: {}, best_time_s: {} },
+    word: { streak: {}, last_word: '' }
+  },
+  last_played: null,
+  view: 'hub', // hub | tictactoe | memory | word
+  statusMsg: '',
+  loaded: false,
+  loadError: '',
+  busy: false,
+  ttt: null,
+  memory: null,
+  word: null
+};
 let idleHomeTimer = null;
 let sleepCheckTimer = null;
 let lastUserActivityAt = Date.now();
@@ -4263,7 +4452,7 @@ function setHubTab(tab){
   if (!HUB_TABS_ACTIVE[tab]) return;
   hubTab = tab;
   try {
-    document.documentElement.classList.remove('hub-tab-home','hub-tab-week','hub-tab-tasks','hub-tab-lists','hub-tab-meals','hub-tab-board','hub-tab-settings');
+    document.documentElement.classList.remove('hub-tab-home','hub-tab-week','hub-tab-tasks','hub-tab-lists','hub-tab-meals','hub-tab-board','hub-tab-fun','hub-tab-settings');
     document.documentElement.classList.add('hub-tab-' + tab);
   } catch (e) {}
   const nav = document.getElementById('fa-hub-nav');
@@ -4296,6 +4485,11 @@ function setHubTab(tab){
     const showB = tab === 'board' && IS_FULL_FRAME;
     boardPanel.setAttribute('aria-hidden', showB ? 'false' : 'true');
   }
+  const funPanel = document.getElementById('fa-fun');
+  if (funPanel) {
+    const showF = tab === 'fun' && IS_FULL_FRAME;
+    funPanel.setAttribute('aria-hidden', showF ? 'false' : 'true');
+  }
   const settingsPanel = document.getElementById('fa-settings');
   if (settingsPanel) {
     const showS = tab === 'settings' && IS_FULL_FRAME;
@@ -4323,6 +4517,14 @@ function setHubTab(tab){
     try {
       if (!(TASKS_STATE.profiles || []).length) loadTasksData();
     } catch (e) {}
+  }
+  if (tab === 'fun') {
+    try {
+      if (!(TASKS_STATE.profiles || []).length) loadTasksData();
+    } catch (e) {}
+    try { renderFunPanel(); } catch (e) {}
+    try { loadGamesState(); } catch (e) {}
+    try { loadSettingsData(); } catch (e) {}
   }
   if (tab === 'settings') {
     try { renderSettingsPanel(); } catch (e) {}
@@ -5752,6 +5954,709 @@ function bindBoardPanelOnce(){
 }
 
 
+
+/* ---- Fun games (games_state.json + fa_game_score webhook) ---- */
+
+const FUN_WORD_LIST = [
+  'APPLE','BEACH','BREAD','CANDY','CHAIR','CLOUD','DANCE','EAGLE','EARTH','FAIRY',
+  'FLAME','FRUIT','GHOST','GRAPE','HAPPY','HEART','HOUSE','JELLY','LEMON','LIGHT',
+  'MAGIC','MUSIC','OCEAN','OLIVE','PANDA','PEACH','PIZZA','PLANT','QUEEN','RAINY',
+  'ROBOT','SHINE','SMILE','SNAKE','SPACE','SPARK','STORM','SUGAR','SUNNY','TIGER',
+  'TRAIN','WATER','WHALE','ZEBRA','BERRY','CORAL','DREAM','FROST','MAPLE','STARR'
+];
+
+function setFunStatus(msg){
+  FUN_STATE.statusMsg = msg || '';
+  const el = document.getElementById('fa-fun-status');
+  if (el) el.textContent = FUN_STATE.statusMsg;
+}
+
+function normalizeGamesState(data){
+  const d = (data && typeof data === 'object') ? data : {};
+  const gIn = (d.games && typeof d.games === 'object') ? d.games : {};
+  const ttt = (gIn.tictactoe && typeof gIn.tictactoe === 'object') ? gIn.tictactoe : {};
+  const mem = (gIn.memory && typeof gIn.memory === 'object') ? gIn.memory : {};
+  const word = (gIn.word && typeof gIn.word === 'object') ? gIn.word : {};
+  function mapNum(obj){
+    const out = {};
+    if (!obj || typeof obj !== 'object') return out;
+    Object.keys(obj).forEach(function(k){
+      const n = Number(obj[k]);
+      if (Number.isFinite(n)) out[String(k)] = n;
+    });
+    return out;
+  }
+  return {
+    games: {
+      tictactoe: { wins: mapNum(ttt.wins), draws: Number(ttt.draws) || 0 },
+      memory: { best_moves: mapNum(mem.best_moves), best_time_s: mapNum(mem.best_time_s) },
+      word: { streak: mapNum(word.streak), last_word: String(word.last_word || '') }
+    },
+    last_played: d.last_played != null ? d.last_played : null
+  };
+}
+
+function applyGamesStateNormalized(n){
+  FUN_STATE.games = n.games;
+  FUN_STATE.last_played = n.last_played;
+  FUN_STATE.loaded = true;
+}
+
+async function loadGamesState(){
+  const res = await fetchFaJson('games_state.json');
+  if (!res.ok || res.empty || !res.data) {
+    FUN_STATE.loadError = 'Waiting on HA seed (games_state.json)';
+    FUN_STATE.loaded = true;
+    if (hubTab === 'fun') renderFunPanel();
+    return { ok:false, data:null };
+  }
+  applyGamesStateNormalized(normalizeGamesState(res.data));
+  FUN_STATE.loadError = '';
+  if (hubTab === 'fun') renderFunPanel();
+  return { ok:true, data:res.data };
+}
+
+async function refreshGamesAfterWrite(verify){
+  let last = null;
+  for (let i = 0; i < 6; i++) {
+    if (i) await sleepMs(350 + i * 150);
+    last = await loadGamesState();
+    try {
+      if (verify && verify()) return { ok:true, attempts:i+1 };
+    } catch (e) {}
+  }
+  return { ok:false, attempts:6, last:last };
+}
+
+async function postGameScore(game, payload, profileId){
+  if (!GAME_SCORE_WEBHOOK) {
+    setFunStatus('Score webhook missing');
+    return { ok:false };
+  }
+  if (FUN_STATE.busy) {
+    setFunStatus('Busy — try again in a moment');
+    return { ok:false };
+  }
+  FUN_STATE.busy = true;
+  setFunStatus('Saving score…');
+  try {
+    const body = { game: String(game || ''), payload: payload || {} };
+    if (profileId) body.profile_id = String(profileId);
+    const r = await fetch('/api/webhook/' + GAME_SCORE_WEBHOOK, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(body),
+      cache: 'no-store'
+    });
+    if (!(r.ok || r.status === 200 || r.status === 201)) {
+      setFunStatus('Score failed (HTTP ' + r.status + ')');
+      return { ok:false, status:r.status };
+    }
+    const ver = await refreshGamesAfterWrite(null);
+    setFunStatus(ver.ok ? 'Score saved' : 'Score saved (refresh pending)');
+    return { ok:true };
+  } catch (e) {
+    setFunStatus('Score failed (network)');
+    return { ok:false };
+  } finally {
+    FUN_STATE.busy = false;
+    try { renderFunPanel(); } catch (e2) {}
+  }
+}
+
+function renderFunProfilePicker(){
+  const el = document.getElementById('fa-fun-profile');
+  if (!el) return;
+  ensureSelectedProfile();
+  const profiles = TASKS_STATE.profiles || [];
+  if (!profiles.length) {
+    el.innerHTML = '<span class="fa-chip">No profiles yet</span>';
+    return;
+  }
+  el.innerHTML = profiles.map(function(p){
+    const on = (p.id === TASKS_STATE.selectedProfileId) ? ' on' : '';
+    return '<button type="button" class="fa-profile-btn' + on + '" data-fun-profile="' + escapeHtml(p.id) + '"' +
+      ' style="--dot:' + escapeHtml(p.color || '#7C5CFF') + '">' +
+      '<span class="fa-dot" style="background:' + escapeHtml(p.color || '#7C5CFF') + '"></span>' +
+      escapeHtml(p.name) + '</button>';
+  }).join('');
+}
+
+function funSelectedProfile(){
+  return ensureSelectedProfile() || '';
+}
+
+function funProfileName(id){
+  const p = profileById(id);
+  return p ? p.name : (id || 'Player');
+}
+
+function dailyWordPick(){
+  const day = Math.floor(Date.now() / 86400000);
+  return FUN_WORD_LIST[day % FUN_WORD_LIST.length];
+}
+
+function renderFunHubStats(){
+  const g = FUN_STATE.games || {};
+  const pid = funSelectedProfile();
+  const ttt = g.tictactoe || { wins:{}, draws:0 };
+  const mem = g.memory || { best_moves:{}, best_time_s:{} };
+  const word = g.word || { streak:{}, last_word:'' };
+  const wins = pid && ttt.wins && ttt.wins[pid] != null ? ttt.wins[pid] : 0;
+  const bm = pid && mem.best_moves && mem.best_moves[pid] != null ? mem.best_moves[pid] : '—';
+  const bt = pid && mem.best_time_s && mem.best_time_s[pid] != null ? (mem.best_time_s[pid] + 's') : '—';
+  const streak = pid && word.streak && word.streak[pid] != null ? word.streak[pid] : 0;
+  return '<div class="fa-stats">' +
+    (pid ? ('Playing as <strong>' + escapeHtml(funProfileName(pid)) + '</strong><br/>') : '') +
+    'Tic-tac-toe wins: ' + wins + ' · draws: ' + (ttt.draws||0) + '<br/>' +
+    'Memory best: ' + bm + ' moves / ' + bt + '<br/>' +
+    'Word streak: ' + streak +
+    (word.last_word ? (' · last: ' + escapeHtml(String(word.last_word).toUpperCase())) : '') +
+    '</div>';
+}
+
+function renderFunLocked(){
+  return '<div class="fa-fun-locked">' +
+    '<div class="big" aria-hidden="true">🔒</div>' +
+    '<h3>Fun is locked</h3>' +
+    '<p>Enable <strong>Unlock Fun tab</strong> in Settings to play games.</p>' +
+    '</div>';
+}
+
+function renderFunHub(){
+  return '<div class="fa-game-cards">' +
+    '<button type="button" class="fa-game-card" data-fun-open="tictactoe">' +
+      '<span class="ico" aria-hidden="true">⭕</span><span class="title">Tic-tac-toe</span>' +
+      '<span class="hint">2 player or vs AI</span></button>' +
+    '<button type="button" class="fa-game-card" data-fun-open="memory">' +
+      '<span class="ico" aria-hidden="true">🃏</span><span class="title">Memory</span>' +
+      '<span class="hint">Match pairs · beat your best</span></button>' +
+    '<button type="button" class="fa-game-card" data-fun-open="word">' +
+      '<span class="ico" aria-hidden="true">🔤</span><span class="title">Word</span>' +
+      '<span class="hint">Daily 5-letter guess</span></button>' +
+    '</div>' + renderFunHubStats();
+}
+
+function tttEmpty(){
+  return { board:['','','','','','','','',''], turn:'X', mode:'ai', over:false, winner:null, winLine:null, scored:false };
+}
+
+function tttLines(){
+  return [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+}
+
+function tttCheck(board){
+  const lines = tttLines();
+  for (let i=0;i<lines.length;i++){
+    const a=lines[i][0], b=lines[i][1], c=lines[i][2];
+    if (board[a] && board[a]===board[b] && board[a]===board[c]) {
+      return { winner: board[a], line: lines[i] };
+    }
+  }
+  if (board.every(function(c){ return !!c; })) return { winner: 'draw', line: null };
+  return null;
+}
+
+function tttAiMove(board){
+  // Prefer win, block, center, corner, side
+  const me = 'O', you = 'X';
+  function tryWin(mark){
+    const lines = tttLines();
+    for (let i=0;i<lines.length;i++){
+      const L = lines[i];
+      const cells = L.map(function(i){ return board[i]; });
+      const empty = L.filter(function(i){ return !board[i]; });
+      const count = cells.filter(function(c){ return c===mark; }).length;
+      if (count===2 && empty.length===1) return empty[0];
+    }
+    return -1;
+  }
+  let m = tryWin(me); if (m>=0) return m;
+  m = tryWin(you); if (m>=0) return m;
+  if (!board[4]) return 4;
+  const corners = [0,2,6,8].filter(function(i){ return !board[i]; });
+  if (corners.length) return corners[Math.floor(Math.random()*corners.length)];
+  const sides = [1,3,5,7].filter(function(i){ return !board[i]; });
+  if (sides.length) return sides[Math.floor(Math.random()*sides.length)];
+  return -1;
+}
+
+async function tttFinishIfNeeded(){
+  const st = FUN_STATE.ttt;
+  if (!st || !st.over || st.scored) return;
+  st.scored = true;
+  const pid = funSelectedProfile();
+  let result = 'draw';
+  let winner = null;
+  if (st.winner === 'draw') {
+    result = 'draw';
+  } else if (st.mode === 'ai') {
+    if (st.winner === 'X') { result = 'win'; winner = pid || 'player'; }
+    else { result = 'loss'; winner = 'ai'; }
+  } else {
+    // pvp: X = selected profile, O = opponent
+    result = 'win';
+    winner = (st.winner === 'X') ? (pid || 'X') : 'O';
+  }
+  await postGameScore('tictactoe', {
+    result: result,
+    winner: winner,
+    mode: st.mode,
+    mark: st.winner
+  }, pid || undefined);
+}
+
+function renderTttView(){
+  if (!FUN_STATE.ttt) FUN_STATE.ttt = tttEmpty();
+  const st = FUN_STATE.ttt;
+  const cells = st.board.map(function(v, i){
+    const win = st.winLine && st.winLine.indexOf(i) >= 0 ? ' win' : '';
+    return '<button type="button" class="fa-ttt-cell' + win + '" data-ttt-cell="' + i + '"' +
+      (st.over || v ? ' disabled' : '') + '>' + escapeHtml(v) + '</button>';
+  }).join('');
+  let meta = '';
+  if (st.over) {
+    if (st.winner === 'draw') meta = 'Draw!';
+    else if (st.mode === 'ai') meta = (st.winner === 'X') ? 'You win!' : 'AI wins';
+    else meta = st.winner + ' wins!';
+  } else {
+    meta = (st.mode === 'ai')
+      ? (st.turn === 'X' ? 'Your turn (X)' : 'AI thinking…')
+      : ('Turn: ' + st.turn);
+  }
+  return '<div class="fa-game-view on" data-fun-view="tictactoe">' +
+    '<div class="fa-game-toolbar">' +
+      '<button type="button" data-fun-back>← Games</button>' +
+      '<span class="fa-game-title">Tic-tac-toe</span>' +
+      '<button type="button" class="primary" data-ttt-reset>New</button>' +
+    '</div>' +
+    '<div class="fa-ttt-modes">' +
+      '<button type="button" class="fa-fun-btn' + (st.mode==='ai'?' primary':'') + '" data-ttt-mode="ai">vs AI</button>' +
+      '<button type="button" class="fa-fun-btn' + (st.mode==='pvp'?' primary':'') + '" data-ttt-mode="pvp">2 Player</button>' +
+    '</div>' +
+    '<div class="fa-game-meta">' + escapeHtml(meta) + '</div>' +
+    '<div class="fa-ttt-board">' + cells + '</div>' +
+    '</div>';
+}
+
+function memoryShuffle(arr){
+  const a = arr.slice();
+  for (let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    const t=a[i]; a[i]=a[j]; a[j]=t;
+  }
+  return a;
+}
+
+function memoryNew(){
+  const icons = ['🍎','🌙','⭐','🎸','🐶','🌈','🚀','🧁'];
+  const deck = memoryShuffle(icons.concat(icons)).map(function(icon, i){
+    return { id:i, icon:icon, up:false, matched:false };
+  });
+  return {
+    cards: deck,
+    first: -1,
+    lock: false,
+    moves: 0,
+    matched: 0,
+    startedAt: 0,
+    endedAt: 0,
+    over: false,
+    scored: false,
+    cols: 4
+  };
+}
+
+function memoryElapsed(st){
+  if (!st.startedAt) return 0;
+  const end = st.endedAt || Date.now();
+  return Math.max(0, Math.round((end - st.startedAt) / 1000));
+}
+
+async function memoryFinishIfNeeded(){
+  const st = FUN_STATE.memory;
+  if (!st || !st.over || st.scored) return;
+  st.scored = true;
+  const pid = funSelectedProfile();
+  await postGameScore('memory', {
+    moves: st.moves,
+    time_s: memoryElapsed(st)
+  }, pid || undefined);
+}
+
+function renderMemoryView(){
+  if (!FUN_STATE.memory) FUN_STATE.memory = memoryNew();
+  const st = FUN_STATE.memory;
+  const cards = st.cards.map(function(c, i){
+    const cls = 'fa-mem-card' + (c.matched ? ' matched' : (c.up ? ' up' : ''));
+    const face = (c.up || c.matched) ? c.icon : '❓';
+    return '<button type="button" class="' + cls + '" data-mem-card="' + i + '"' +
+      (c.matched || st.lock ? ' disabled' : '') + '>' + face + '</button>';
+  }).join('');
+  const meta = st.over
+    ? ('Done! ' + st.moves + ' moves · ' + memoryElapsed(st) + 's')
+    : ('Moves: ' + st.moves + ' · Time: ' + memoryElapsed(st) + 's');
+  return '<div class="fa-game-view on" data-fun-view="memory">' +
+    '<div class="fa-game-toolbar">' +
+      '<button type="button" data-fun-back>← Games</button>' +
+      '<span class="fa-game-title">Memory</span>' +
+      '<button type="button" class="primary" data-mem-reset>New</button>' +
+    '</div>' +
+    '<div class="fa-game-meta">' + escapeHtml(meta) + '</div>' +
+    '<div class="fa-mem-board" style="grid-template-columns:repeat(' + st.cols + ',1fr)">' + cards + '</div>' +
+    '</div>';
+}
+
+function wordNew(){
+  const answer = dailyWordPick();
+  return {
+    answer: answer,
+    rows: [],
+    current: '',
+    maxRows: 6,
+    over: false,
+    won: false,
+    scored: false,
+    keyState: {}
+  };
+}
+
+function wordScoreGuess(answer, guess){
+  const a = answer.split('');
+  const g = guess.split('');
+  const res = Array(5).fill('absent');
+  const left = {};
+  for (let i=0;i<5;i++){
+    if (g[i] === a[i]) { res[i] = 'correct'; }
+    else { left[a[i]] = (left[a[i]]||0) + 1; }
+  }
+  for (let i=0;i<5;i++){
+    if (res[i] === 'correct') continue;
+    if (left[g[i]]) { res[i] = 'present'; left[g[i]]--; }
+  }
+  return res;
+}
+
+async function wordFinishIfNeeded(){
+  const st = FUN_STATE.word;
+  if (!st || !st.over || st.scored) return;
+  st.scored = true;
+  const pid = funSelectedProfile();
+  await postGameScore('word', {
+    won: !!st.won,
+    word: st.answer,
+    guesses: st.rows.length
+  }, pid || undefined);
+}
+
+function renderWordView(){
+  if (!FUN_STATE.word) FUN_STATE.word = wordNew();
+  const st = FUN_STATE.word;
+  let grid = '';
+  for (let r=0;r<st.maxRows;r++){
+    let rowGuess = '';
+    let marks = null;
+    if (r < st.rows.length) {
+      rowGuess = st.rows[r].guess;
+      marks = st.rows[r].marks;
+    } else if (r === st.rows.length && !st.over) {
+      rowGuess = st.current;
+    }
+    let cells = '';
+    for (let c=0;c<5;c++){
+      const ch = rowGuess[c] || '';
+      const mk = marks ? marks[c] : '';
+      cells += '<div class="fa-word-cell' + (mk ? (' ' + mk) : '') + '">' + escapeHtml(ch) + '</div>';
+    }
+    grid += '<div class="fa-word-row">' + cells + '</div>';
+  }
+  const rows = [
+    'QWERTYUIOP'.split(''),
+    'ASDFGHJKL'.split(''),
+    ['ENTER'].concat('ZXCVBNM'.split('')).concat(['⌫'])
+  ];
+  const keys = rows.map(function(row){
+    return '<div class="fa-word-keyrow">' + row.map(function(k){
+      const wide = (k === 'ENTER' || k === '⌫') ? ' wide' : '';
+      const stCls = st.keyState[k] ? (' ' + st.keyState[k]) : '';
+      return '<button type="button" class="fa-word-key' + wide + stCls + '" data-word-key="' + escapeHtml(k) + '">' +
+        escapeHtml(k) + '</button>';
+    }).join('') + '</div>';
+  }).join('');
+  let meta = 'Guess the 5-letter word';
+  if (st.over) meta = st.won ? ('Nice! ' + st.answer) : ('It was ' + st.answer);
+  return '<div class="fa-game-view on" data-fun-view="word">' +
+    '<div class="fa-game-toolbar">' +
+      '<button type="button" data-fun-back>← Games</button>' +
+      '<span class="fa-game-title">Word</span>' +
+      '<button type="button" class="primary" data-word-reset>New</button>' +
+    '</div>' +
+    '<div class="fa-game-meta">' + escapeHtml(meta) + '</div>' +
+    grid +
+    '<div class="fa-word-keys">' + keys + '</div>' +
+    '</div>';
+}
+
+function renderFunPanel(){
+  const sub = document.getElementById('fa-fun-sub');
+  const body = document.getElementById('fa-fun-body');
+  if (sub) {
+    sub.textContent = SETTINGS_STATE.fun_unlocked ? 'Family games' : 'Locked';
+  }
+  renderFunProfilePicker();
+  if (FUN_STATE.loadError && !(FUN_STATE.games && FUN_STATE.loaded)) {
+    setFunStatus(FUN_STATE.loadError);
+  } else if (!FUN_STATE.statusMsg) {
+    setFunStatus('');
+  } else {
+    setFunStatus(FUN_STATE.statusMsg);
+  }
+  if (!body) return;
+  if (!SETTINGS_STATE.fun_unlocked) {
+    FUN_STATE.view = 'hub';
+    body.innerHTML = renderFunLocked();
+    return;
+  }
+  if (FUN_STATE.view === 'tictactoe') body.innerHTML = renderTttView();
+  else if (FUN_STATE.view === 'memory') body.innerHTML = renderMemoryView();
+  else if (FUN_STATE.view === 'word') body.innerHTML = renderWordView();
+  else body.innerHTML = renderFunHub();
+}
+
+function openFunGame(name){
+  FUN_STATE.view = name;
+  if (name === 'tictactoe' && !FUN_STATE.ttt) FUN_STATE.ttt = tttEmpty();
+  if (name === 'memory' && !FUN_STATE.memory) FUN_STATE.memory = memoryNew();
+  if (name === 'word' && !FUN_STATE.word) FUN_STATE.word = wordNew();
+  renderFunPanel();
+}
+
+function funBackToHub(){
+  FUN_STATE.view = 'hub';
+  renderFunPanel();
+}
+
+function tttPlayAt(i){
+  const st = FUN_STATE.ttt;
+  if (!st || st.over || st.board[i]) return;
+  if (st.mode === 'ai' && st.turn !== 'X') return;
+  st.board[i] = st.turn;
+  const chk = tttCheck(st.board);
+  if (chk) {
+    st.over = true;
+    st.winner = chk.winner;
+    st.winLine = chk.line;
+    renderFunPanel();
+    tttFinishIfNeeded();
+    return;
+  }
+  st.turn = (st.turn === 'X') ? 'O' : 'X';
+  renderFunPanel();
+  if (st.mode === 'ai' && st.turn === 'O' && !st.over) {
+    setTimeout(function(){
+      const move = tttAiMove(st.board);
+      if (move < 0) return;
+      st.board[move] = 'O';
+      const chk2 = tttCheck(st.board);
+      if (chk2) {
+        st.over = true;
+        st.winner = chk2.winner;
+        st.winLine = chk2.line;
+        renderFunPanel();
+        tttFinishIfNeeded();
+        return;
+      }
+      st.turn = 'X';
+      renderFunPanel();
+    }, 280);
+  }
+}
+
+function memoryFlip(i){
+  const st = FUN_STATE.memory;
+  if (!st || st.over || st.lock) return;
+  const card = st.cards[i];
+  if (!card || card.up || card.matched) return;
+  if (!st.startedAt) st.startedAt = Date.now();
+  card.up = true;
+  if (st.first < 0) {
+    st.first = i;
+    renderFunPanel();
+    return;
+  }
+  st.moves += 1;
+  const a = st.cards[st.first];
+  const b = card;
+  if (a.icon === b.icon) {
+    a.matched = true; b.matched = true;
+    st.matched += 1;
+    st.first = -1;
+    if (st.matched >= st.cards.length / 2) {
+      st.over = true;
+      st.endedAt = Date.now();
+      renderFunPanel();
+      memoryFinishIfNeeded();
+      return;
+    }
+    renderFunPanel();
+  } else {
+    st.lock = true;
+    renderFunPanel();
+    const firstIdx = st.first;
+    setTimeout(function(){
+      st.cards[firstIdx].up = false;
+      st.cards[i].up = false;
+      st.first = -1;
+      st.lock = false;
+      renderFunPanel();
+    }, 550);
+  }
+}
+
+function wordKey(k){
+  const st = FUN_STATE.word;
+  if (!st || st.over) return;
+  if (k === '⌫') {
+    st.current = st.current.slice(0, -1);
+    renderFunPanel();
+    return;
+  }
+  if (k === 'ENTER') {
+    if (st.current.length !== 5) {
+      setFunStatus('Need 5 letters');
+      return;
+    }
+    const guess = st.current.toUpperCase();
+    // allow any 5 letters offline (list is answer pool only)
+    if (!/^[A-Z]{5}$/.test(guess)) {
+      setFunStatus('Letters only');
+      return;
+    }
+    const marks = wordScoreGuess(st.answer, guess);
+    st.rows.push({ guess: guess, marks: marks });
+    for (let i=0;i<5;i++){
+      const ch = guess[i];
+      const m = marks[i];
+      const prev = st.keyState[ch];
+      if (m === 'correct' || (m === 'present' && prev !== 'correct') || (!prev && m === 'absent')) {
+        if (!(prev === 'correct') && !(prev === 'present' && m === 'absent')) {
+          st.keyState[ch] = m;
+        }
+      }
+    }
+    st.current = '';
+    if (guess === st.answer) {
+      st.over = true; st.won = true;
+      renderFunPanel();
+      wordFinishIfNeeded();
+      return;
+    }
+    if (st.rows.length >= st.maxRows) {
+      st.over = true; st.won = false;
+      renderFunPanel();
+      wordFinishIfNeeded();
+      return;
+    }
+    renderFunPanel();
+    return;
+  }
+  if (st.current.length >= 5) return;
+  if (!/^[A-Z]$/i.test(k)) return;
+  st.current += k.toUpperCase();
+  renderFunPanel();
+}
+
+function bindFunPanelOnce(){
+  const panel = document.getElementById('fa-fun');
+  if (panel && !panel._boundStop) {
+    panel._boundStop = true;
+    ['pointerdown','touchstart','click','keydown','keyup','keypress','input'].forEach(function(evt){
+      panel.addEventListener(evt, function(ev){
+        try { ev.stopPropagation(); } catch (e) {}
+        try { noteUserActivity(); } catch (e2) {}
+      }, false);
+    });
+  }
+  const body = document.getElementById('fa-fun-body');
+  const profileEl = document.getElementById('fa-fun-profile');
+  if (profileEl && !profileEl._bound) {
+    profileEl._bound = true;
+    profileEl.addEventListener('click', function(ev){
+      const btn = ev.target && ev.target.closest ? ev.target.closest('[data-fun-profile]') : null;
+      if (!btn) return;
+      try { ev.preventDefault(); ev.stopPropagation(); } catch (e) {}
+      const id = btn.getAttribute('data-fun-profile');
+      if (!id || !profileById(id)) return;
+      TASKS_STATE.selectedProfileId = id;
+      renderFunPanel();
+    }, false);
+  }
+  if (body && !body._bound) {
+    body._bound = true;
+    body.addEventListener('click', function(ev){
+      const t = ev.target && ev.target.closest ? ev.target : null;
+      if (!t || !t.closest) return;
+      const open = t.closest('[data-fun-open]');
+      if (open) {
+        try { ev.preventDefault(); ev.stopPropagation(); } catch (e) {}
+        openFunGame(open.getAttribute('data-fun-open'));
+        return;
+      }
+      if (t.closest('[data-fun-back]')) {
+        try { ev.preventDefault(); ev.stopPropagation(); } catch (e) {}
+        funBackToHub();
+        return;
+      }
+      const tttMode = t.closest('[data-ttt-mode]');
+      if (tttMode) {
+        try { ev.preventDefault(); ev.stopPropagation(); } catch (e) {}
+        FUN_STATE.ttt = tttEmpty();
+        FUN_STATE.ttt.mode = tttMode.getAttribute('data-ttt-mode') === 'pvp' ? 'pvp' : 'ai';
+        renderFunPanel();
+        return;
+      }
+      if (t.closest('[data-ttt-reset]')) {
+        try { ev.preventDefault(); ev.stopPropagation(); } catch (e) {}
+        const mode = (FUN_STATE.ttt && FUN_STATE.ttt.mode) || 'ai';
+        FUN_STATE.ttt = tttEmpty();
+        FUN_STATE.ttt.mode = mode;
+        renderFunPanel();
+        return;
+      }
+      const cell = t.closest('[data-ttt-cell]');
+      if (cell) {
+        try { ev.preventDefault(); ev.stopPropagation(); } catch (e) {}
+        tttPlayAt(parseInt(cell.getAttribute('data-ttt-cell'), 10));
+        return;
+      }
+      if (t.closest('[data-mem-reset]')) {
+        try { ev.preventDefault(); ev.stopPropagation(); } catch (e) {}
+        FUN_STATE.memory = memoryNew();
+        renderFunPanel();
+        return;
+      }
+      const mc = t.closest('[data-mem-card]');
+      if (mc) {
+        try { ev.preventDefault(); ev.stopPropagation(); } catch (e) {}
+        memoryFlip(parseInt(mc.getAttribute('data-mem-card'), 10));
+        return;
+      }
+      if (t.closest('[data-word-reset]')) {
+        try { ev.preventDefault(); ev.stopPropagation(); } catch (e) {}
+        FUN_STATE.word = wordNew();
+        renderFunPanel();
+        return;
+      }
+      const wk = t.closest('[data-word-key]');
+      if (wk) {
+        try { ev.preventDefault(); ev.stopPropagation(); } catch (e) {}
+        wordKey(wk.getAttribute('data-word-key'));
+        return;
+      }
+    }, false);
+  }
+}
+
 /* ---- Settings (settings.json + pin/sleep/idle webhooks) ---- */
 
 function setSettingsStatus(msg){
@@ -5818,6 +6723,7 @@ function applySettingsNormalized(n){
   SETTINGS_STATE.loaded = true;
   try { syncIdleHomeTimer(); } catch (e) {}
   try { applySleepVeil(); } catch (e2) {}
+  try { if (hubTab === 'fun') renderFunPanel(); } catch (e3) {}
 }
 
 async function loadSettingsData(){
@@ -6103,7 +7009,7 @@ function syncIdleHomeTimer(){
       const ae = document.activeElement;
       if (ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA') &&
           ae.closest && (ae.closest('#fa-settings') || ae.closest('#fa-pin-modal') ||
-            ae.closest('#fa-board') || ae.closest('#fa-lists') || ae.closest('#fa-meals') ||
+            ae.closest('#fa-board') || ae.closest('#fa-fun') || ae.closest('#fa-lists') || ae.closest('#fa-meals') ||
             ae.closest('#fa-tasks') || ae.closest('#cw-add-modal'))) {
         return;
       }
@@ -9244,6 +10150,7 @@ function startSlideshow(){
   try { bindListsPanelOnce(); } catch (e) {}
   try { bindMealsPanelOnce(); } catch (e) {}
   try { bindBoardPanelOnce(); } catch (e) {}
+  try { bindFunPanelOnce(); } catch (e) {}
   try { bindSettingsPanelOnce(); } catch (e) {}
   try { loadSettingsData(); } catch (e) {}
   try {
