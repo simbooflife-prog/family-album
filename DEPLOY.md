@@ -9,7 +9,7 @@ Internal build id lives in `frame.html` as `FRAME_BUILD` (also in the HTML comme
 
 1. Edit in git (`main` on this repo). Commit + push.
 2. Copy changed files **only** to SOT: `/homeassistant/www/family-album`.
-3. Bump every Lovelace iframe `?v=` (Overview + digital-frame). Suggested next: match `FRAME_BUILD` (currently `20260912-ui5`).
+3. Bump every Lovelace iframe `?v=` (Overview + digital-frame). Suggested next: match `FRAME_BUILD` (currently `20260912-ui6`).
 4. Verify checksums (see below). If `/config/www/family-album` still exists, md5 **both** paths — they must match (symlink).
 5. Hard refresh the frame (tablet / companion app / browser).
 
@@ -51,7 +51,7 @@ HA and tablets cache `frame.html` hard. Changing `FRAME_BUILD` inside the file i
 
 - Overview iframe: bump `?v=`
 - digital-frame dashboard iframe: bump `?v=`
-- Example: `/local/family-album/frame.html?v=20260912-ui5`
+- Example: `/local/family-album/frame.html?v=20260912-ui6`
 
 ## Calendar webhooks (create + delete)
 
@@ -72,7 +72,7 @@ Same-origin from the frame iframe on HA:
 - Detection: `URLSearchParams` `standby=1` → full frame; absent/false → Overview mini.
 
 
-## Tasks webhooks (complete) — HA still needed
+## Tasks webhooks (complete + claim) — ui6
 
 Frame reads (defensive if 404/empty):
 
@@ -82,11 +82,14 @@ Frame reads (defensive if 404/empty):
 | `/local/family-album/tasks.json` | `{ tasks: [], completions: [] }` |
 | `/local/family-album/rewards.json` | `{ rewards: [] }` |
 
-**Write path:** frame keeps `TASK_COMPLETE_WEBHOOK = null` until HA provides an id. Do **not** invent a secret webhook id in the frame. When ready, set the constant to the webhook path id (same pattern as calendar) and accept:
+Same-origin from the frame iframe on HA:
 
-`POST /api/webhook/<id>` body `{ task_id, profile_id, date, status: "done"|"skipped" }` then update `tasks.json` completions (and optional stars).
+| Action | Method | Path | Body |
+| --- | --- | --- | --- |
+| Complete / skip | `POST` | `/api/webhook/fa_task_done_1f4256b46bfabce7b448f150` | `{ task_id, profile_id, date, status }` where status is `done` or `skipped` |
+| Claim (up for grabs) | `POST` | `/api/webhook/fa_task_claim_d860215cd82ee7e9193d3eb6` | `{ task_id, profile_id }` |
 
-Until then, Tasks check-off is optimistic/local UI only and shows **HA sync coming**.
+**Do not trust HTTP 200 alone:** after POST, the frame re-fetches `tasks.json` + `profiles.json` (stars) with a short retry. Failures show in the Tasks status line. Profile picker uses selected profile (`p_haya` when only/available).
 
 ## Hub bottom nav
 

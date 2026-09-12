@@ -82,7 +82,7 @@ Family photos (`IMG_*.jpg`, `filler_*.jpg`, etc.) stay on HA under SOT and are g
 Build in this order:
 
 1. **Calendar** — week strip, add-event, delete-event (verified), swipe-weeks (in progress on the live frame)
-2. **Tasks** — tab shell + read-only JSON (ui5); write webhook TBD
+2. **Tasks** — tab + complete/claim HA webhooks (ui6); profile picker + JSON refresh verify
 3. **Lists**
 4. **Meals + recipes**
 5. **Message board**

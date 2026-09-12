@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black"/>
 <title>Family Album Frame</title>
-<!-- frame FRAME_BUILD=20260912-ui5 v=20260912-ui5 (bump Lovelace ?v= on HA deploy) square-stage 1:1 photo-only-zoom hud-fixed gesture-lock layout-guides-edit-only snap-align hud-clock no-pill drag-clock calweather-combined swipe-weeks add-event delete-event week.json forecast.json preserve-add-modal-input overview-layout-lock gear-edit-mode save-touch-fix tasks-tab-shell hub-bottom-nav -->
+<!-- frame FRAME_BUILD=20260912-ui6 v=20260912-ui6 (bump Lovelace ?v= on HA deploy) square-stage 1:1 photo-only-zoom hud-fixed gesture-lock layout-guides-edit-only snap-align hud-clock no-pill drag-clock calweather-combined swipe-weeks add-event delete-event week.json forecast.json preserve-add-modal-input overview-layout-lock gear-edit-mode save-touch-fix tasks-tab-shell hub-bottom-nav tasks-webhooks-claim-complete profile-picker -->
 <style>
   html,body{margin:0;height:100%;background:#0a1220;overflow:hidden;touch-action:manipulation;-webkit-user-select:none;user-select:none}
   html.standby-page,html.standby-page body{background:#000}
@@ -1140,6 +1140,31 @@
     font:600 15px/1.45 -apple-system,sans-serif;
   }
   #fa-tasks .fa-empty .big{font-size:36px;line-height:1.2;margin-bottom:8px}
+  #fa-tasks .fa-tasks-profile{
+    display:flex;flex-wrap:wrap;align-items:center;gap:8px;
+    margin:0 0 10px;flex:0 0 auto;
+  }
+  #fa-tasks .fa-profile-btn{
+    display:inline-flex;align-items:center;gap:6px;
+    padding:6px 10px 6px 6px;border-radius:999px;cursor:pointer;
+    border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);
+    color:#fff;font:700 12px/1.2 -apple-system,sans-serif;
+    -webkit-tap-highlight-color:transparent;
+  }
+  #fa-tasks .fa-profile-btn.on{
+    border-color:rgba(180,200,255,.75);background:rgba(100,130,220,.35);
+    box-shadow:0 0 0 1px rgba(160,190,255,.35);
+  }
+  #fa-tasks .fa-profile-btn .fa-dot{width:12px;height:12px}
+  #fa-tasks .fa-profile-stars{opacity:.85;font-weight:600}
+  #fa-tasks .fa-claim{
+    flex:0 0 auto;min-width:64px;height:44px;padding:0 14px;border-radius:22px;
+    border:1px solid rgba(180,200,255,.55);background:rgba(90,120,220,.45);
+    color:#fff;cursor:pointer;font:800 13px/1 -apple-system,sans-serif;
+    -webkit-tap-highlight-color:transparent;
+  }
+  #fa-tasks .fa-claim:active{transform:scale(.94)}
+  #fa-tasks .fa-claim[disabled]{opacity:.45;pointer-events:none}
   html.hub-tab-tasks #sb-calweather,
   html.hub-tab-tasks #sb-week,
   html.hub-tab-tasks #sb-forecast,
@@ -1294,13 +1319,14 @@
     <h2>Tasks</h2>
     <p class="fa-tasks-sub" id="fa-tasks-date"></p>
   </div>
+  <div class="fa-tasks-profile" id="fa-tasks-profile" aria-label="Active profile"></div>
   <div class="fa-tasks-status" id="fa-tasks-status" role="status" aria-live="polite"></div>
   <div class="fa-tasks-scroll" id="fa-tasks-list"></div>
 </div>
 
 <script>
 /* Identifiable deploy build — bump Lovelace iframe ?v= separately on HA. */
-const FRAME_BUILD = '20260912-ui5';
+const FRAME_BUILD = '20260912-ui6';
 try { window.FRAME_BUILD = FRAME_BUILD; } catch (e) {}
 const FALLBACK = [
   "/local/family-album/filler_forest.jpg",
@@ -3330,7 +3356,8 @@ const HOUSE_CAL_ID = '66f073dac1e425814071e46d54f8f167bfbba00bcadcfa267bbbfe2184
 
 
 /* ---- Family hub tabs + Tasks (profiles/tasks/rewards JSON; family hub only) ---- */
-const TASK_COMPLETE_WEBHOOK = null; // HA: set to webhook id string when ready, e.g. 'fa_task_complete_…'
+const TASK_COMPLETE_WEBHOOK = 'fa_task_done_1f4256b46bfabce7b448f150';
+const TASK_CLAIM_WEBHOOK = 'fa_task_claim_d860215cd82ee7e9193d3eb6';
 const HUB_TABS_ACTIVE = { home:1, week:1, tasks:1 };
 let hubTab = 'home';
 const TASKS_STATE = {
@@ -3338,10 +3365,12 @@ const TASKS_STATE = {
   tasks: [],
   completions: [],
   rewards: [],
-  optimistic: {}, // task_id|profile_id|date -> 'done'
+  optimistic: {}, // task_id|profile_id|date -> 'done'|'skipped'
+  selectedProfileId: '',
   statusMsg: '',
   loaded: false,
-  loadError: ''
+  loadError: '',
+  busy: false
 };
 
 function todayISO(){
@@ -3350,6 +3379,10 @@ function todayISO(){
   const m = String(d.getMonth()+1).padStart(2,'0');
   const day = String(d.getDate()).padStart(2,'0');
   return y + '-' + m + '-' + day;
+}
+
+function sleepMs(ms){
+  return new Promise(function(resolve){ setTimeout(resolve, ms); });
 }
 
 function setStandbyOnClass(on){
@@ -3491,6 +3524,23 @@ function profileById(id){
   return null;
 }
 
+function ensureSelectedProfile(){
+  const profiles = TASKS_STATE.profiles || [];
+  if (!profiles.length) {
+    TASKS_STATE.selectedProfileId = '';
+    return '';
+  }
+  if (TASKS_STATE.selectedProfileId && profileById(TASKS_STATE.selectedProfileId)) {
+    return TASKS_STATE.selectedProfileId;
+  }
+  if (profileById('p_haya')) {
+    TASKS_STATE.selectedProfileId = 'p_haya';
+    return 'p_haya';
+  }
+  TASKS_STATE.selectedProfileId = profiles[0].id;
+  return TASKS_STATE.selectedProfileId;
+}
+
 function completionKey(taskId, profileId, date){
   return String(taskId) + '|' + String(profileId||'') + '|' + String(date||'');
 }
@@ -3503,6 +3553,22 @@ function isTaskDone(task, profileId, date){
     return c.task_id === task.id && c.status === 'done' && c.date === date &&
       (!profileId || !c.profile_id || c.profile_id === profileId);
   });
+}
+
+function findCompletion(taskId, profileId, date, status){
+  date = date || todayISO();
+  status = status === 'skipped' ? 'skipped' : 'done';
+  return TASKS_STATE.completions.some(function(c){
+    return c.task_id === taskId && c.status === status && c.date === date &&
+      (!profileId || !c.profile_id || c.profile_id === profileId);
+  });
+}
+
+function taskById(id){
+  for (let i=0;i<TASKS_STATE.tasks.length;i++){
+    if (TASKS_STATE.tasks[i].id === id) return TASKS_STATE.tasks[i];
+  }
+  return null;
 }
 
 function setTasksStatus(msg){
@@ -3522,6 +3588,7 @@ async function loadTasksData(){
   TASKS_STATE.completions = normalizeCompletions(tk.data);
   TASKS_STATE.rewards = normalizeRewards(rw.data);
   TASKS_STATE.loaded = true;
+  ensureSelectedProfile();
   const missing = [];
   if (!pr.ok || pr.empty) missing.push('profiles');
   if (!tk.ok || tk.empty) missing.push('tasks');
@@ -3532,6 +3599,7 @@ async function loadTasksData(){
     TASKS_STATE.loadError = '';
   }
   if (hubTab === 'tasks') renderTasksPanel();
+  return { profilesOk: !!(pr.ok && !pr.empty), tasksOk: !!(tk.ok && !tk.empty) };
 }
 
 function renderAssigneeChips(ids){
@@ -3551,23 +3619,55 @@ function escapeHtml(s){
   });
 }
 
+function renderProfilePicker(){
+  const el = document.getElementById('fa-tasks-profile');
+  if (!el) return;
+  const profiles = TASKS_STATE.profiles || [];
+  const selected = ensureSelectedProfile();
+  if (!profiles.length) {
+    el.innerHTML = '<span class="fa-chip">No profiles yet</span>';
+    return;
+  }
+  // One profile: show name + stars (still a single selected chip)
+  el.innerHTML = profiles.map(function(p){
+    const on = p.id === selected ? ' on' : '';
+    return '<button type="button" class="fa-profile-btn' + on + '" data-profile-pick="' + escapeHtml(p.id) + '"' +
+      ' aria-pressed="' + (p.id === selected ? 'true' : 'false') + '">' +
+      '<span class="fa-dot" style="background:' + String(p.color||'#90CAF9').replace(/"/g,'') + '"></span>' +
+      escapeHtml(p.name) +
+      '<span class="fa-profile-stars">⭐ ' + (Number(p.stars)||0) + '</span>' +
+      '</button>';
+  }).join('');
+}
+
 function renderTaskRow(task, opts){
   opts = opts || {};
   const date = todayISO();
+  const selected = ensureSelectedProfile();
   const primaryAssignee = (task.assignees && task.assignees[0]) || '';
-  const done = isTaskDone(task, primaryAssignee, date);
+  const profileForComplete = selected || primaryAssignee;
+  const isGrab = !!(task.up_for_grabs && !(task.assignees && task.assignees.length));
+  const done = isTaskDone(task, profileForComplete || primaryAssignee, date);
   const kindLabel = task.kind === 'routine' ? 'Routine' : 'Chore';
   const daypart = (task.dayparts && task.dayparts.length) ? task.dayparts.join(' · ') : '';
   const stars = task.stars ? ('⭐ ' + task.stars) : '';
   const due = task.due ? ('Due ' + task.due) : '';
   const emoji = task.emoji ? ('<span aria-hidden="true">' + escapeHtml(task.emoji) + '</span> ') : '';
-  const assigneesHtml = task.up_for_grabs && !(task.assignees && task.assignees.length)
+  const assigneesHtml = isGrab
     ? '<span class="fa-chip">Up for grabs</span>'
     : renderAssigneeChips(task.assignees);
-  return '<div class="fa-task' + (done ? ' done' : '') + '" data-task-id="' + escapeHtml(task.id) + '">' +
-    '<button type="button" class="fa-check' + (done ? ' on' : '') + '" data-task-check="' + escapeHtml(task.id) + '"' +
-    ' data-profile="' + escapeHtml(primaryAssignee) + '" aria-label="' + (done ? 'Completed' : 'Mark done') + '">' +
-    (done ? '✓' : '') + '</button>' +
+  let actionHtml;
+  if (isGrab) {
+    actionHtml = '<button type="button" class="fa-claim" data-task-claim="' + escapeHtml(task.id) + '"' +
+      (TASKS_STATE.busy ? ' disabled' : '') +
+      ' aria-label="Claim task">Claim</button>';
+  } else {
+    actionHtml = '<button type="button" class="fa-check' + (done ? ' on' : '') + '" data-task-check="' + escapeHtml(task.id) + '"' +
+      ' data-profile="' + escapeHtml(profileForComplete) + '" aria-label="' + (done ? 'Completed' : 'Mark done') + '">' +
+      (done ? '✓' : '') + '</button>';
+  }
+  return '<div class="fa-task' + (done ? ' done' : '') + (isGrab ? ' grab' : '') + '" data-task-id="' + escapeHtml(task.id) + '">' +
+    actionHtml +
     '<div class="fa-task-main">' +
       '<div class="fa-task-title">' + emoji + escapeHtml(task.title) + '</div>' +
       '<div class="fa-task-meta">' +
@@ -3588,18 +3688,15 @@ function renderTasksPanel(){
       dateEl.textContent = new Date().toLocaleDateString(undefined, {weekday:'short', month:'short', day:'numeric'});
     } catch (e) { dateEl.textContent = todayISO(); }
   }
+  renderProfilePicker();
   if (!list) return;
   if (TASKS_STATE.loadError && !TASKS_STATE.tasks.length) {
     setTasksStatus(TASKS_STATE.loadError);
-  } else if (!TASK_COMPLETE_WEBHOOK) {
-    setTasksStatus('HA sync coming — check-off is local until webhook exists');
   } else {
     setTasksStatus(TASKS_STATE.statusMsg || '');
   }
   const assigned = TASKS_STATE.tasks.filter(function(t){ return !t.up_for_grabs || (t.assignees && t.assignees.length); });
   const grabs = TASKS_STATE.tasks.filter(function(t){ return t.up_for_grabs && !(t.assignees && t.assignees.length); });
-  // Also include up_for_grabs with assignees in assigned; grabs section for pure grabs
-  // Research: Up for Grabs = unassigned. Show assigned chores/routines + grabs section.
   const routines = assigned.filter(function(t){ return t.kind === 'routine'; });
   const chores = assigned.filter(function(t){ return t.kind !== 'routine'; });
 
@@ -3624,60 +3721,167 @@ function renderTasksPanel(){
   list.innerHTML = html || '<div class="fa-empty">Nothing due today.</div>';
 }
 
-async function completeTask(taskId, profileId){
-  const date = todayISO();
-  const key = completionKey(taskId, profileId, date);
-  TASKS_STATE.optimistic[key] = 'done';
-  renderTasksPanel();
+async function refreshTasksAfterWrite(verify){
+  // Re-read tasks.json + profiles.json; do not trust HTTP 200 alone.
+  let last = null;
+  for (let i = 0; i < 6; i++) {
+    if (i) await sleepMs(350 + i * 150);
+    last = await loadTasksData();
+    try {
+      if (verify && verify()) return { ok:true, attempts:i+1 };
+    } catch (e) {}
+  }
+  return { ok:false, attempts:6, last:last };
+}
 
-  if (!TASK_COMPLETE_WEBHOOK) {
-    setTasksStatus('HA sync coming');
+async function completeTask(taskId, profileId, status){
+  status = (status === 'skipped') ? 'skipped' : 'done';
+  profileId = profileId || ensureSelectedProfile();
+  if (!profileId) {
+    setTasksStatus('Pick a profile first');
     return;
   }
+  if (!TASK_COMPLETE_WEBHOOK) {
+    setTasksStatus('Complete webhook missing');
+    return;
+  }
+  if (TASKS_STATE.busy) {
+    setTasksStatus('Busy — try again in a moment');
+    return;
+  }
+  const date = todayISO();
+  const key = completionKey(taskId, profileId, date);
+  TASKS_STATE.busy = true;
+  if (status === 'done') TASKS_STATE.optimistic[key] = 'done';
+  else TASKS_STATE.optimistic[key] = 'skipped';
+  renderTasksPanel();
+  setTasksStatus(status === 'skipped' ? 'Skipping…' : 'Saving…');
   try {
     const body = {
       task_id: taskId,
-      profile_id: profileId || '',
+      profile_id: profileId,
       date: date,
-      status: 'done'
+      status: status
     };
     const r = await fetch('/api/webhook/' + TASK_COMPLETE_WEBHOOK, {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify(body)
+      body: JSON.stringify(body),
+      cache: 'no-store'
     });
-    if (!r.ok) {
-      setTasksStatus('HA sync failed (HTTP ' + r.status + ') — local check kept');
+    if (!(r.ok || r.status === 200 || r.status === 201)) {
+      delete TASKS_STATE.optimistic[key];
+      renderTasksPanel();
+      setTasksStatus('Complete failed (HTTP ' + r.status + ')');
       return;
     }
-    setTasksStatus('Synced to HA');
-    // refresh from JSON shortly
-    setTimeout(function(){ loadTasksData(); }, 1200);
+    const ver = await refreshTasksAfterWrite(function(){
+      return findCompletion(taskId, profileId, date, status);
+    });
+    delete TASKS_STATE.optimistic[key];
+    renderTasksPanel();
+    if (ver.ok) {
+      setTasksStatus(status === 'skipped' ? 'Skipped' : 'Done — synced');
+    } else {
+      // POST accepted but JSON not yet reflecting; keep optimistic UX soft-fail note
+      TASKS_STATE.optimistic[key] = status;
+      renderTasksPanel();
+      setTasksStatus('Posted — waiting for tasks.json refresh');
+    }
   } catch (e) {
-    setTasksStatus('HA sync coming');
+    delete TASKS_STATE.optimistic[key];
+    renderTasksPanel();
+    setTasksStatus('Complete failed (network)');
+  } finally {
+    TASKS_STATE.busy = false;
+    renderTasksPanel();
+  }
+}
+
+async function claimTask(taskId){
+  const profileId = ensureSelectedProfile();
+  if (!profileId) {
+    setTasksStatus('Pick a profile to claim');
+    return;
+  }
+  if (!TASK_CLAIM_WEBHOOK) {
+    setTasksStatus('Claim webhook missing');
+    return;
+  }
+  if (TASKS_STATE.busy) {
+    setTasksStatus('Busy — try again in a moment');
+    return;
+  }
+  TASKS_STATE.busy = true;
+  renderTasksPanel();
+  setTasksStatus('Claiming…');
+  try {
+    const body = { task_id: taskId, profile_id: profileId };
+    const r = await fetch('/api/webhook/' + TASK_CLAIM_WEBHOOK, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(body),
+      cache: 'no-store'
+    });
+    if (!(r.ok || r.status === 200 || r.status === 201)) {
+      setTasksStatus('Claim failed (HTTP ' + r.status + ')');
+      return;
+    }
+    const ver = await refreshTasksAfterWrite(function(){
+      const t = taskById(taskId);
+      return !!(t && t.assignees && t.assignees.indexOf(profileId) >= 0);
+    });
+    if (ver.ok) setTasksStatus('Claimed');
+    else setTasksStatus('Posted — waiting for tasks.json refresh');
+  } catch (e) {
+    setTasksStatus('Claim failed (network)');
+  } finally {
+    TASKS_STATE.busy = false;
+    renderTasksPanel();
   }
 }
 
 function bindTasksPanelOnce(){
   const list = document.getElementById('fa-tasks-list');
-  if (!list || list._bound) return;
-  list._bound = true;
-  list.addEventListener('click', function(ev){
-    const btn = ev.target && ev.target.closest ? ev.target.closest('[data-task-check]') : null;
-    if (!btn) return;
-    try { ev.preventDefault(); ev.stopPropagation(); } catch (e) {}
-    const id = btn.getAttribute('data-task-check');
-    const profile = btn.getAttribute('data-profile') || '';
-    if (!id) return;
-    if (btn.classList.contains('on')) {
-      // MVP: no un-complete path without webhook; keep done
-      setTasksStatus(TASK_COMPLETE_WEBHOOK ? 'Already done' : 'HA sync coming');
-      return;
-    }
-    completeTask(id, profile);
-  }, true);
+  const profileEl = document.getElementById('fa-tasks-profile');
+  if (list && !list._bound) {
+    list._bound = true;
+    list.addEventListener('click', function(ev){
+      const claimBtn = ev.target && ev.target.closest ? ev.target.closest('[data-task-claim]') : null;
+      if (claimBtn) {
+        try { ev.preventDefault(); ev.stopPropagation(); } catch (e) {}
+        const id = claimBtn.getAttribute('data-task-claim');
+        if (id) claimTask(id);
+        return;
+      }
+      const btn = ev.target && ev.target.closest ? ev.target.closest('[data-task-check]') : null;
+      if (!btn) return;
+      try { ev.preventDefault(); ev.stopPropagation(); } catch (e) {}
+      const id = btn.getAttribute('data-task-check');
+      const profile = btn.getAttribute('data-profile') || ensureSelectedProfile();
+      if (!id) return;
+      if (btn.classList.contains('on')) {
+        setTasksStatus('Already done');
+        return;
+      }
+      completeTask(id, profile, 'done');
+    }, true);
+  }
+  if (profileEl && !profileEl._bound) {
+    profileEl._bound = true;
+    profileEl.addEventListener('click', function(ev){
+      const btn = ev.target && ev.target.closest ? ev.target.closest('[data-profile-pick]') : null;
+      if (!btn) return;
+      try { ev.preventDefault(); ev.stopPropagation(); } catch (e) {}
+      const id = btn.getAttribute('data-profile-pick');
+      if (!id || !profileById(id)) return;
+      TASKS_STATE.selectedProfileId = id;
+      renderTasksPanel();
+      const p = profileById(id);
+      setTasksStatus(p ? ('Acting as ' + p.name) : '');
+    }, true);
+  }
 }
-
 
 function ensureCalwxHandles(el){
   if (!el) return null;
@@ -5823,6 +6027,9 @@ function startSlideshow(){
   try { if (typeof startClockDrag === 'function') startClockDrag(); } catch (e) {}
   try { initCanvasZoom(); } catch (e) {}
   try { bindHudGearOnce(); syncHudEditChrome(); } catch (e) {}
+  try { bindHubNavOnce(); } catch (e) {}
+  try { bindTasksPanelOnce(); } catch (e) {}
+  try { syncHubNavVisibility(); } catch (e) {}
   // legacy week/forecast drag disabled — combined #sb-calweather
   try { if (typeof loadLayout === 'function') loadLayout(); } catch (e) {}
   try { if (typeof loadCalendar === 'function') loadCalendar(); } catch (e) {}
