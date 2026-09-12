@@ -24,12 +24,12 @@ Live URL base:
 https://1loiy6aum6qt4x1pp4isn1o6fbott58q.ui.nabu.casa/local/family-album/
 ```
 
-Current in-file `FRAME_BUILD`: `20260912-ui9` (bump Lovelace `?v=` on HA to match on deploy).
+Current in-file `FRAME_BUILD`: `20260912-ui10` (bump Lovelace `?v=` on HA to match on deploy).
 
 Example:
 
 ```
-/local/family-album/frame.html?v=20260912-ui9
+/local/family-album/frame.html?v=20260912-ui10
 ```
 
 ## Symlink — do not treat as a second tree
@@ -73,6 +73,8 @@ Fetched from live Nabu Casa `/local/family-album/` on 2026-09-12 (no auth requir
 | `lists.json` | Grocery / To-Do (+ other) lists |
 | `recipes.json` | Recipe catalog |
 | `meal_plan.json` | Week meal plan slots |
+| `messages.json` | Sticky notes / message board |
+| `settings.json` | PIN lock, sleep schedule, idle, fun unlock |
 
 `current.json`, standalone CSS/JS, and an HA-side README were **not** present (HTTP 404). CSS and JS live inside `frame.html`.
 
@@ -89,4 +91,5 @@ Build in this order:
 3. **Lists** — tab + add/toggle/clear HA webhooks (ui7); list picker + JSON refresh verify
 4. **Meals + recipes** — tab + set/clear/upsert HA webhooks (ui8); week grid + recipe list/detail
 5. **Message board** — tab + add/delete/pin HA webhooks (ui9); sticky notes, pinned-first
-6. **Child lock + sleep**
+6. **Child lock + sleep** — Settings tab + PIN/sleep/idle HA webhooks (ui10)
+7. **Fun games** (later; gated by `fun_unlocked`)

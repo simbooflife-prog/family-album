@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black"/>
 <title>Family Album Frame</title>
-<!-- frame FRAME_BUILD=20260912-ui9 v=20260912-ui9 (bump Lovelace ?v= on HA deploy) square-stage 1:1 photo-only-zoom hud-fixed gesture-lock layout-guides-edit-only snap-align hud-clock no-pill drag-clock calweather-combined swipe-weeks add-event delete-event week.json forecast.json preserve-add-modal-input overview-layout-lock gear-edit-mode save-touch-fix tasks-tab-shell hub-bottom-nav tasks-webhooks-claim-complete profile-picker lists-tab lists-webhooks-add-toggle-clear meals-tab meals-webhooks-set-clear-upsert board-tab board-webhooks-add-delete-pin -->
+<!-- frame FRAME_BUILD=20260912-ui10 v=20260912-ui10 (bump Lovelace ?v= on HA deploy) square-stage 1:1 photo-only-zoom hud-fixed gesture-lock layout-guides-edit-only snap-align hud-clock no-pill drag-clock calweather-combined swipe-weeks add-event delete-event week.json forecast.json preserve-add-modal-input overview-layout-lock gear-edit-mode save-touch-fix tasks-tab-shell hub-bottom-nav tasks-webhooks-claim-complete profile-picker lists-tab lists-webhooks-add-toggle-clear meals-tab meals-webhooks-set-clear-upsert board-tab board-webhooks-add-delete-pin settings-tab settings-pin-sleep-idle -->
 <style>
   html,body{margin:0;height:100%;background:#0a1220;overflow:hidden;touch-action:manipulation;-webkit-user-select:none;user-select:none}
   html.standby-page,html.standby-page body{background:#000}
@@ -1624,6 +1624,158 @@
   html.hub-tab-board #sb-forecast,
   html.hub-tab-board #sb-clock{opacity:.18;pointer-events:none}
 
+  /* ---- Settings panel ---- */
+  #fa-settings{
+    position:fixed;inset:0;z-index:2147482900;
+    display:none;flex-direction:column;
+    padding:max(12px,env(safe-area-inset-top)) 14px calc(72px + env(safe-area-inset-bottom)) 14px;
+    box-sizing:border-box;
+    background:rgba(6,10,18,.92);
+    backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+    color:#fff;pointer-events:auto;touch-action:manipulation;
+    -webkit-user-select:none;user-select:none;
+  }
+  html.hub-tab-settings #fa-settings{display:flex}
+  html.overview-mini #fa-settings{display:none!important}
+  #fa-settings .fa-settings-head{
+    display:flex;align-items:baseline;justify-content:space-between;gap:12px;
+    margin:0 0 10px;flex:0 0 auto;
+  }
+  #fa-settings .fa-settings-head h2{
+    margin:0;font:800 22px/1.15 -apple-system,sans-serif;letter-spacing:.02em;
+  }
+  #fa-settings .fa-settings-sub{
+    margin:0;font:600 12px/1.2 -apple-system,sans-serif;opacity:.65;
+  }
+  #fa-settings .fa-settings-status{
+    min-height:18px;margin:0 0 8px;font:600 12px/1.3 -apple-system,sans-serif;
+    color:rgba(180,210,255,.9);
+  }
+  #fa-settings .fa-settings-scroll{
+    flex:1 1 auto;min-height:0;overflow:auto;-webkit-overflow-scrolling:touch;
+    padding-bottom:12px;
+  }
+  #fa-settings .fa-set-sec{
+    margin:16px 0 8px;font:800 12px/1.2 -apple-system,sans-serif;
+    letter-spacing:.08em;text-transform:uppercase;opacity:.7;
+  }
+  #fa-settings .fa-set-sec:first-child{margin-top:2px}
+  #fa-settings .fa-set-card{
+    padding:12px 14px;margin:0 0 10px;border-radius:14px;
+    background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);
+  }
+  #fa-settings .fa-set-row{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+    margin:0 0 10px;
+  }
+  #fa-settings .fa-set-row:last-child{margin-bottom:0}
+  #fa-settings .fa-set-label{
+    font:700 14px/1.25 -apple-system,sans-serif;flex:1 1 auto;min-width:0;
+  }
+  #fa-settings .fa-set-hint{
+    display:block;margin-top:3px;font:600 11px/1.3 -apple-system,sans-serif;opacity:.6;
+  }
+  #fa-settings .fa-toggle{
+    position:relative;flex:0 0 auto;width:52px;height:30px;border-radius:999px;
+    border:1px solid rgba(255,255,255,.28);background:rgba(0,0,0,.35);
+    cursor:pointer;padding:0;-webkit-tap-highlight-color:transparent;
+  }
+  #fa-settings .fa-toggle::after{
+    content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;
+    background:#fff;transition:transform .18s ease;box-shadow:0 1px 4px rgba(0,0,0,.35);
+  }
+  #fa-settings .fa-toggle.on{background:rgba(76,175,80,.75);border-color:rgba(129,199,132,.9)}
+  #fa-settings .fa-toggle.on::after{transform:translateX(22px)}
+  #fa-settings .fa-toggle[disabled]{opacity:.4;pointer-events:none}
+  #fa-settings .fa-set-fields{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px}
+  #fa-settings .fa-set-field{flex:1 1 120px;min-width:100px}
+  #fa-settings .fa-set-field label{
+    display:block;margin:0 0 4px;font:700 11px/1.2 -apple-system,sans-serif;opacity:.7;
+  }
+  #fa-settings .fa-set-field input[type="text"],
+  #fa-settings .fa-set-field input[type="password"],
+  #fa-settings .fa-set-field input[type="time"],
+  #fa-settings .fa-set-field input[type="number"]{
+    width:100%;box-sizing:border-box;padding:10px 12px;border-radius:10px;
+    border:1px solid rgba(255,255,255,.22);background:rgba(0,0,0,.35);color:#fff;
+    font:600 15px/1.2 -apple-system,sans-serif;-webkit-user-select:text;user-select:text;
+  }
+  #fa-settings .fa-set-field input[type="range"]{width:100%;accent-color:#7eb6ff}
+  #fa-settings .fa-set-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+  #fa-settings .fa-set-actions button{
+    min-height:40px;padding:0 14px;border-radius:12px;cursor:pointer;
+    border:1px solid rgba(255,255,255,.28);background:rgba(255,255,255,.1);color:#fff;
+    font:700 13px/1 -apple-system,sans-serif;-webkit-tap-highlight-color:transparent;
+  }
+  #fa-settings .fa-set-actions button.primary{
+    background:rgba(80,140,255,.55);border-color:rgba(140,180,255,.7);
+  }
+  #fa-settings .fa-set-actions button:active{transform:scale(.96)}
+  #fa-settings .fa-set-actions button[disabled]{opacity:.45;pointer-events:none}
+  #fa-settings .fa-pin-badge{
+    display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;
+    font:700 11px/1.2 -apple-system,sans-serif;
+    background:rgba(76,175,80,.25);border:1px solid rgba(129,199,132,.45);
+  }
+  #fa-settings .fa-pin-badge.off{
+    background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18);opacity:.75;
+  }
+  html.hub-tab-settings #sb-calweather,
+  html.hub-tab-settings #sb-week,
+  html.hub-tab-settings #sb-forecast,
+  html.hub-tab-settings #sb-clock{opacity:.18;pointer-events:none}
+
+  /* ---- PIN unlock modal ---- */
+  #fa-pin-modal{
+    position:fixed;inset:0;z-index:2147483600;display:none;
+    align-items:center;justify-content:center;
+    background:rgba(0,0,0,.55);padding:20px;box-sizing:border-box;
+    pointer-events:auto;touch-action:manipulation;
+  }
+  #fa-pin-modal.on{display:flex}
+  html.overview-mini #fa-pin-modal{display:none!important}
+  #fa-pin-modal .fa-pin-sheet{
+    width:min(360px,100%);padding:18px 16px 14px;border-radius:18px;
+    background:rgba(18,24,36,.96);border:1px solid rgba(255,255,255,.18);
+    box-shadow:0 16px 48px rgba(0,0,0,.5);color:#fff;
+  }
+  #fa-pin-modal h3{margin:0 0 6px;font:800 18px/1.2 -apple-system,sans-serif}
+  #fa-pin-modal .fa-pin-sub{margin:0 0 12px;font:600 12px/1.35 -apple-system,sans-serif;opacity:.7}
+  #fa-pin-modal input{
+    width:100%;box-sizing:border-box;padding:12px 14px;border-radius:12px;margin:0 0 10px;
+    border:1px solid rgba(255,255,255,.25);background:rgba(0,0,0,.4);color:#fff;
+    font:700 22px/1 -apple-system,sans-serif;letter-spacing:.25em;text-align:center;
+    -webkit-user-select:text;user-select:text;
+  }
+  #fa-pin-modal .fa-pin-actions{display:flex;gap:8px;justify-content:flex-end}
+  #fa-pin-modal .fa-pin-actions button{
+    min-height:42px;padding:0 16px;border-radius:12px;cursor:pointer;
+    border:1px solid rgba(255,255,255,.28);background:rgba(255,255,255,.1);color:#fff;
+    font:700 14px/1 -apple-system,sans-serif;
+  }
+  #fa-pin-modal .fa-pin-actions button.primary{
+    background:rgba(80,140,255,.55);border-color:rgba(140,180,255,.7);
+  }
+  #fa-pin-modal .fa-pin-msg{
+    min-height:16px;margin:8px 0 0;font:600 12px/1.3 -apple-system,sans-serif;
+    color:rgba(255,180,160,.95);
+  }
+
+  /* ---- Sleep / screensaver veil ---- */
+  #fa-sleep-veil{
+    position:fixed;inset:0;z-index:2147483200;display:none;
+    background:#000;opacity:0;transition:opacity .5s ease;
+    pointer-events:auto;touch-action:manipulation;cursor:pointer;
+  }
+  #fa-sleep-veil.on{display:block}
+  #fa-sleep-veil .fa-sleep-hint{
+    position:absolute;left:50%;bottom:max(28px,env(safe-area-inset-bottom));
+    transform:translateX(-50%);
+    font:600 12px/1.3 -apple-system,sans-serif;color:rgba(255,255,255,.35);
+    pointer-events:none;white-space:nowrap;
+  }
+  html.overview-mini #fa-sleep-veil{display:none!important}
+
 
 </style>
 </head>
@@ -1766,7 +1918,7 @@
   <button type="button" class="fa-tab" data-tab="meals"><span class="ico" aria-hidden="true">🍽️</span><span>Meals</span></button>
   <button type="button" class="fa-tab" data-tab="board"><span class="ico" aria-hidden="true">📌</span><span>Board</span></button>
   <button type="button" class="fa-tab soon" data-tab="fun" disabled aria-disabled="true"><span class="ico" aria-hidden="true">🎮</span><span>Fun</span><span class="soon-tag">soon</span></button>
-  <button type="button" class="fa-tab soon" data-tab="settings" disabled aria-disabled="true"><span class="ico" aria-hidden="true">···</span><span>Settings</span><span class="soon-tag">soon</span></button>
+  <button type="button" class="fa-tab" data-tab="settings"><span class="ico" aria-hidden="true">⚙️</span><span>Settings</span></button>
 </nav>
 <div id="fa-tasks" aria-hidden="true">
   <div class="fa-tasks-head">
@@ -1828,6 +1980,112 @@
   <div class="fa-board-scroll" id="fa-board-list"></div>
 </div>
 
+
+<div id="fa-settings" aria-hidden="true">
+  <div class="fa-settings-head">
+    <h2>Settings</h2>
+    <p class="fa-settings-sub" id="fa-settings-sub">Child lock · sleep · idle</p>
+  </div>
+  <div class="fa-settings-status" id="fa-settings-status" role="status" aria-live="polite"></div>
+  <div class="fa-settings-scroll" id="fa-settings-body">
+    <div class="fa-set-sec">Child lock</div>
+    <div class="fa-set-card" id="fa-set-pin-card">
+      <div class="fa-set-row">
+        <div class="fa-set-label">PIN lock
+          <span class="fa-set-hint">Require PIN for Settings + layout edit</span>
+        </div>
+        <button type="button" class="fa-toggle" id="fa-set-pin-enabled" aria-pressed="false" aria-label="Enable PIN lock"></button>
+      </div>
+      <div class="fa-set-row">
+        <span class="fa-pin-badge off" id="fa-set-pin-badge">No PIN set</span>
+      </div>
+      <div class="fa-set-fields" id="fa-set-pin-fields">
+        <div class="fa-set-field">
+          <label for="fa-set-pin-new" id="fa-set-pin-new-label">Set PIN</label>
+          <input type="password" id="fa-set-pin-new" inputmode="numeric" pattern="[0-9]*" maxlength="8" autocomplete="new-password" placeholder="••••" />
+        </div>
+        <div class="fa-set-field">
+          <label for="fa-set-pin-confirm">Confirm</label>
+          <input type="password" id="fa-set-pin-confirm" inputmode="numeric" pattern="[0-9]*" maxlength="8" autocomplete="new-password" placeholder="••••" />
+        </div>
+      </div>
+      <div class="fa-set-actions">
+        <button type="button" class="primary" id="fa-set-pin-save">Save PIN</button>
+        <button type="button" id="fa-set-pin-clear" hidden>Clear PIN</button>
+      </div>
+    </div>
+
+    <div class="fa-set-sec">Sleep</div>
+    <div class="fa-set-card">
+      <div class="fa-set-row">
+        <div class="fa-set-label">Sleep schedule
+          <span class="fa-set-hint">Dim screen overnight · tap to wake briefly</span>
+        </div>
+        <button type="button" class="fa-toggle" id="fa-set-sleep-enabled" aria-pressed="false" aria-label="Enable sleep schedule"></button>
+      </div>
+      <div class="fa-set-fields">
+        <div class="fa-set-field">
+          <label for="fa-set-sleep-start">Start</label>
+          <input type="time" id="fa-set-sleep-start" value="22:00" />
+        </div>
+        <div class="fa-set-field">
+          <label for="fa-set-sleep-end">End</label>
+          <input type="time" id="fa-set-sleep-end" value="07:00" />
+        </div>
+        <div class="fa-set-field" style="flex:1 1 100%">
+          <label for="fa-set-sleep-dim">Dim <span id="fa-set-sleep-dim-val">0.30</span></label>
+          <input type="range" id="fa-set-sleep-dim" min="0.05" max="0.95" step="0.05" value="0.3" />
+        </div>
+      </div>
+      <div class="fa-set-actions">
+        <button type="button" class="primary" id="fa-set-sleep-save">Save sleep</button>
+      </div>
+    </div>
+
+    <div class="fa-set-sec">Idle</div>
+    <div class="fa-set-card">
+      <div class="fa-set-fields">
+        <div class="fa-set-field">
+          <label for="fa-set-idle">Return to Home after (seconds)</label>
+          <input type="number" id="fa-set-idle" min="30" max="3600" step="10" value="120" />
+        </div>
+      </div>
+      <div class="fa-set-hint" style="margin:6px 0 8px">No touch on the full frame → Home / photos</div>
+      <div class="fa-set-actions">
+        <button type="button" class="primary" id="fa-set-idle-save">Save idle</button>
+      </div>
+    </div>
+
+    <div class="fa-set-sec">Fun</div>
+    <div class="fa-set-card">
+      <div class="fa-set-row">
+        <div class="fa-set-label">Unlock Fun tab
+          <span class="fa-set-hint">Gates games later (tab still “soon”)</span>
+        </div>
+        <button type="button" class="fa-toggle" id="fa-set-fun-unlocked" aria-pressed="false" aria-label="Unlock Fun tab"></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="fa-pin-modal" aria-hidden="true">
+  <div class="fa-pin-sheet" role="dialog" aria-modal="true" aria-labelledby="fa-pin-heading">
+    <h3 id="fa-pin-heading">Enter PIN</h3>
+    <p class="fa-pin-sub" id="fa-pin-sub">Child lock is on</p>
+    <input type="password" id="fa-pin-input" inputmode="numeric" pattern="[0-9]*" maxlength="8" autocomplete="one-time-code" placeholder="••••" aria-label="PIN" />
+    <div class="fa-pin-actions">
+      <button type="button" id="fa-pin-cancel">Cancel</button>
+      <button type="button" class="primary" id="fa-pin-ok">Unlock</button>
+    </div>
+    <div class="fa-pin-msg" id="fa-pin-msg" role="status" aria-live="polite"></div>
+  </div>
+</div>
+
+<div id="fa-sleep-veil" aria-hidden="true" title="Tap to wake">
+  <div class="fa-sleep-hint">Tap to wake</div>
+</div>
+
+
 <div id="fa-meal-slot-modal" aria-hidden="true">
   <div class="fa-meal-sheet" role="dialog" aria-modal="true" aria-labelledby="fa-meal-slot-title">
     <h3 id="fa-meal-slot-title">Pick a meal</h3>
@@ -1844,7 +2102,7 @@
 
 <script>
 /* Identifiable deploy build — bump Lovelace iframe ?v= separately on HA. */
-const FRAME_BUILD = '20260912-ui9';
+const FRAME_BUILD = '20260912-ui10';
 try { window.FRAME_BUILD = FRAME_BUILD; } catch (e) {}
 const FALLBACK = [
   "/local/family-album/filler_forest.jpg",
@@ -1929,6 +2187,11 @@ function bindHudGearOnce(){
   const activate = function(ev){
     try { ev.preventDefault(); ev.stopPropagation(); } catch (e) {}
     if (!IS_FULL_FRAME) return;
+    // Turning edit ON requires PIN when child lock is active; Done (off) is free.
+    if (!hudEditMode && settingsNeedsPinGate()) {
+      requestPinUnlock({ type: 'gear' });
+      return;
+    }
     toggleHudEditMode();
   };
   let last = 0;
@@ -3509,7 +3772,7 @@ function bindHoldDrag(el, storageKey, kind){
 
   const onDown = (ev) => {
     if (typeof hudLayoutEditAllowed === 'function' && !hudLayoutEditAllowed()) return;
-    if (ev.target && ev.target.closest && (ev.target.closest('#sb-exit') || ev.target.closest('#sb-fs') || ev.target.closest('#sb-fit') || ev.target.closest('#sb-hud-gear') || ev.target.closest('#fa-hub-nav') || ev.target.closest('#fa-tasks') || ev.target.closest('#fa-lists') || ev.target.closest('#fa-meals') || ev.target.closest('#fa-meal-slot-modal') || ev.target.closest('#fa-board'))) return;
+    if (ev.target && ev.target.closest && (ev.target.closest('#sb-exit') || ev.target.closest('#sb-fs') || ev.target.closest('#sb-fit') || ev.target.closest('#sb-hud-gear') || ev.target.closest('#fa-hub-nav') || ev.target.closest('#fa-tasks') || ev.target.closest('#fa-lists') || ev.target.closest('#fa-meals') || ev.target.closest('#fa-meal-slot-modal') || ev.target.closest('#fa-board') || ev.target.closest('#fa-settings') || ev.target.closest('#fa-pin-modal') || ev.target.closest('#fa-sleep-veil'))) return;
     // Cal+weather: swipe on day strip / form / + — do not hold-drag the whole card (header/now still drags).
     if (kind === 'calwx' && ev.target && ev.target.closest &&
         ev.target.closest('.cw-days, .cw-day, .cw-evs, .cw-ev, .cw-form, .cw-add, .cw-hint, input, button.cw-add, .cw-toolbar, #cw-add-modal, .cw-add-sheet, #cw-del-modal, .cw-del-sheet')) {
@@ -3885,7 +4148,9 @@ const MEAL_UPSERT_WEBHOOK = 'fa_meal_upsert_f9f7faf0fe54feffff07b665';
 const MSG_ADD_WEBHOOK = 'fa_msg_add_8c9415dc7cafefb510c39979';
 const MSG_DEL_WEBHOOK = 'fa_msg_del_c2ba06f28b669bf17fcca0e4';
 const MSG_PIN_WEBHOOK = 'fa_msg_pin_0e009ff24c7aa7391526aac4';
-const HUB_TABS_ACTIVE = { home:1, week:1, tasks:1, lists:1, meals:1, board:1 };
+const SET_UPD_WEBHOOK = 'fa_set_upd_34332b41ce03c5d48a94a605';
+const SET_PIN_WEBHOOK = 'fa_set_pin_9959ced132bab609265c8787';
+const HUB_TABS_ACTIVE = { home:1, week:1, tasks:1, lists:1, meals:1, board:1, settings:1 };
 let hubTab = 'home';
 const TASKS_STATE = {
   profiles: [],
@@ -3945,6 +4210,23 @@ const BOARD_STATE = {
   loadError: '',
   busy: false
 };
+const SETTINGS_STATE = {
+  pin_enabled: false,
+  pin_set: false, // true if HA has a non-empty pin — never store/display raw pin
+  sleep: { enabled: true, start: '22:00', end: '07:00', dim: 0.3 },
+  idle_home_seconds: 120,
+  fun_unlocked: false,
+  statusMsg: '',
+  loaded: false,
+  loadError: '',
+  busy: false,
+  unlockedUntil: 0, // ms epoch after successful PIN verify
+  sleepAwakeUntil: 0, // brief wake from sleep veil
+  pendingPinAction: null // { type:'settings'|'gear' }
+};
+let idleHomeTimer = null;
+let sleepCheckTimer = null;
+let lastUserActivityAt = Date.now();
 
 function todayISO(){
   const d = new Date();
@@ -3961,6 +4243,8 @@ function sleepMs(ms){
 function setStandbyOnClass(on){
   try { document.documentElement.classList.toggle('standby-on', !!on); } catch (e) {}
   syncHubNavVisibility();
+  try { applySleepVeil(); } catch (e2) {}
+  try { if (on) syncIdleHomeTimer(); } catch (e3) {}
 }
 
 function syncHubNavVisibility(){
@@ -3979,7 +4263,7 @@ function setHubTab(tab){
   if (!HUB_TABS_ACTIVE[tab]) return;
   hubTab = tab;
   try {
-    document.documentElement.classList.remove('hub-tab-home','hub-tab-week','hub-tab-tasks','hub-tab-lists','hub-tab-meals','hub-tab-board');
+    document.documentElement.classList.remove('hub-tab-home','hub-tab-week','hub-tab-tasks','hub-tab-lists','hub-tab-meals','hub-tab-board','hub-tab-settings');
     document.documentElement.classList.add('hub-tab-' + tab);
   } catch (e) {}
   const nav = document.getElementById('fa-hub-nav');
@@ -4012,6 +4296,11 @@ function setHubTab(tab){
     const showB = tab === 'board' && IS_FULL_FRAME;
     boardPanel.setAttribute('aria-hidden', showB ? 'false' : 'true');
   }
+  const settingsPanel = document.getElementById('fa-settings');
+  if (settingsPanel) {
+    const showS = tab === 'settings' && IS_FULL_FRAME;
+    settingsPanel.setAttribute('aria-hidden', showS ? 'false' : 'true');
+  }
   if (tab !== 'meals') {
     try { closeMealSlotModal(); } catch (e) {}
   }
@@ -4035,6 +4324,11 @@ function setHubTab(tab){
       if (!(TASKS_STATE.profiles || []).length) loadTasksData();
     } catch (e) {}
   }
+  if (tab === 'settings') {
+    try { renderSettingsPanel(); } catch (e) {}
+    try { loadSettingsData(); } catch (e) {}
+  }
+  try { noteUserActivity(); } catch (e) {}
   syncHubNavVisibility();
 }
 
@@ -4048,6 +4342,10 @@ function bindHubNavOnce(){
     const tab = btn.getAttribute('data-tab');
     if (!tab || !HUB_TABS_ACTIVE[tab]) return;
     try { ev.preventDefault(); ev.stopPropagation(); } catch (e) {}
+    if (tab === 'settings' && settingsNeedsPinGate()) {
+      requestPinUnlock({ type: 'settings' });
+      return;
+    }
     setHubTab(tab);
   }, true);
   // default tab
@@ -5453,6 +5751,566 @@ function bindBoardPanelOnce(){
   }
 }
 
+
+/* ---- Settings (settings.json + pin/sleep/idle webhooks) ---- */
+
+function setSettingsStatus(msg){
+  SETTINGS_STATE.statusMsg = msg || '';
+  const el = document.getElementById('fa-settings-status');
+  if (el) el.textContent = SETTINGS_STATE.statusMsg;
+}
+
+function settingsSessionUnlocked(){
+  return Date.now() < (SETTINGS_STATE.unlockedUntil || 0);
+}
+
+function settingsNeedsPinGate(){
+  // Gate when lock is on AND a PIN already exists (first-time set is free).
+  if (!IS_FULL_FRAME) return false;
+  if (!SETTINGS_STATE.pin_enabled) return false;
+  if (!SETTINGS_STATE.pin_set) return false;
+  if (settingsSessionUnlocked()) return false;
+  return true;
+}
+
+function normalizeHHMM(s, fallback){
+  const m = String(s || '').trim().match(/^(\d{1,2}):(\d{2})/);
+  if (!m) return fallback || '00:00';
+  const h = Math.max(0, Math.min(23, parseInt(m[1], 10) || 0));
+  const min = Math.max(0, Math.min(59, parseInt(m[2], 10) || 0));
+  return String(h).padStart(2, '0') + ':' + String(min).padStart(2, '0');
+}
+
+function normalizeSettings(data){
+  const d = (data && typeof data === 'object') ? data : {};
+  const sleepIn = (d.sleep && typeof d.sleep === 'object') ? d.sleep : {};
+  const dimRaw = sleepIn.dim != null ? Number(sleepIn.dim) : 0.3;
+  const dim = Math.max(0.05, Math.min(0.95, Number.isFinite(dimRaw) ? dimRaw : 0.3));
+  let idle = Number(d.idle_home_seconds);
+  if (!Number.isFinite(idle)) idle = 120;
+  idle = Math.max(30, Math.min(3600, Math.round(idle)));
+  const pinStr = (d.pin != null) ? String(d.pin) : '';
+  return {
+    pin_enabled: !!d.pin_enabled,
+    pin_set: !!(pinStr && pinStr.length),
+    sleep: {
+      enabled: (sleepIn.enabled == null) ? true : !!sleepIn.enabled,
+      start: normalizeHHMM(sleepIn.start, '22:00'),
+      end: normalizeHHMM(sleepIn.end, '07:00'),
+      dim: dim
+    },
+    idle_home_seconds: idle,
+    fun_unlocked: !!d.fun_unlocked
+  };
+}
+
+function applySettingsNormalized(n){
+  SETTINGS_STATE.pin_enabled = !!n.pin_enabled;
+  SETTINGS_STATE.pin_set = !!n.pin_set;
+  SETTINGS_STATE.sleep = {
+    enabled: !!n.sleep.enabled,
+    start: n.sleep.start,
+    end: n.sleep.end,
+    dim: n.sleep.dim
+  };
+  SETTINGS_STATE.idle_home_seconds = n.idle_home_seconds;
+  SETTINGS_STATE.fun_unlocked = !!n.fun_unlocked;
+  SETTINGS_STATE.loaded = true;
+  try { syncIdleHomeTimer(); } catch (e) {}
+  try { applySleepVeil(); } catch (e2) {}
+}
+
+async function loadSettingsData(){
+  const res = await fetchFaJson('settings.json');
+  if (!res.ok || res.empty || !res.data) {
+    SETTINGS_STATE.loadError = 'Waiting on HA seed (settings.json)';
+    SETTINGS_STATE.loaded = true;
+    if (hubTab === 'settings') renderSettingsPanel();
+    return { ok:false, data:null };
+  }
+  const n = normalizeSettings(res.data);
+  applySettingsNormalized(n);
+  SETTINGS_STATE.loadError = '';
+  if (hubTab === 'settings') renderSettingsPanel();
+  return { ok:true, data:res.data };
+}
+
+function setToggleEl(el, on){
+  if (!el) return;
+  el.classList.toggle('on', !!on);
+  el.setAttribute('aria-pressed', on ? 'true' : 'false');
+}
+
+function renderSettingsPanel(){
+  const sub = document.getElementById('fa-settings-sub');
+  if (sub) sub.textContent = 'Child lock · sleep · idle';
+  if (SETTINGS_STATE.loadError && !SETTINGS_STATE.loaded) {
+    setSettingsStatus(SETTINGS_STATE.loadError);
+  } else {
+    setSettingsStatus(SETTINGS_STATE.statusMsg || '');
+  }
+  setToggleEl(document.getElementById('fa-set-pin-enabled'), SETTINGS_STATE.pin_enabled);
+  setToggleEl(document.getElementById('fa-set-sleep-enabled'), SETTINGS_STATE.sleep.enabled);
+  setToggleEl(document.getElementById('fa-set-fun-unlocked'), SETTINGS_STATE.fun_unlocked);
+
+  const badge = document.getElementById('fa-set-pin-badge');
+  if (badge) {
+    if (SETTINGS_STATE.pin_set) {
+      badge.textContent = 'PIN set';
+      badge.classList.remove('off');
+    } else {
+      badge.textContent = 'No PIN set';
+      badge.classList.add('off');
+    }
+  }
+  const newLabel = document.getElementById('fa-set-pin-new-label');
+  if (newLabel) newLabel.textContent = SETTINGS_STATE.pin_set ? 'Change PIN' : 'Set PIN';
+  const clearBtn = document.getElementById('fa-set-pin-clear');
+  if (clearBtn) clearBtn.hidden = !SETTINGS_STATE.pin_set;
+
+  const startEl = document.getElementById('fa-set-sleep-start');
+  const endEl = document.getElementById('fa-set-sleep-end');
+  const dimEl = document.getElementById('fa-set-sleep-dim');
+  const dimVal = document.getElementById('fa-set-sleep-dim-val');
+  if (startEl) startEl.value = SETTINGS_STATE.sleep.start;
+  if (endEl) endEl.value = SETTINGS_STATE.sleep.end;
+  if (dimEl) dimEl.value = String(SETTINGS_STATE.sleep.dim);
+  if (dimVal) dimVal.textContent = Number(SETTINGS_STATE.sleep.dim).toFixed(2);
+
+  const idleEl = document.getElementById('fa-set-idle');
+  if (idleEl) idleEl.value = String(SETTINGS_STATE.idle_home_seconds);
+
+  // Never leave raw PIN in the change fields after render
+  const pinNew = document.getElementById('fa-set-pin-new');
+  const pinConfirm = document.getElementById('fa-set-pin-confirm');
+  if (pinNew && document.activeElement !== pinNew) pinNew.value = '';
+  if (pinConfirm && document.activeElement !== pinConfirm) pinConfirm.value = '';
+}
+
+async function refreshSettingsAfterWrite(verify){
+  let last = null;
+  for (let i = 0; i < 6; i++) {
+    if (i) await sleepMs(350 + i * 150);
+    last = await loadSettingsData();
+    try {
+      if (verify && verify()) return { ok:true, attempts:i+1 };
+    } catch (e) {}
+  }
+  return { ok:false, attempts:6, last:last };
+}
+
+async function postSettingsUpdate(partial){
+  if (!SET_UPD_WEBHOOK) {
+    setSettingsStatus('Update webhook missing');
+    return { ok:false };
+  }
+  if (SETTINGS_STATE.busy) {
+    setSettingsStatus('Busy — try again in a moment');
+    return { ok:false };
+  }
+  SETTINGS_STATE.busy = true;
+  setSettingsStatus('Saving…');
+  try {
+    const r = await fetch('/api/webhook/' + SET_UPD_WEBHOOK, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(partial || {}),
+      cache: 'no-store'
+    });
+    if (!(r.ok || r.status === 200 || r.status === 201)) {
+      setSettingsStatus('Save failed (HTTP ' + r.status + ')');
+      return { ok:false, status:r.status };
+    }
+    const ver = await refreshSettingsAfterWrite(null);
+    setSettingsStatus(ver.ok ? 'Saved' : 'Saved (refresh pending)');
+    return { ok:true };
+  } catch (e) {
+    setSettingsStatus('Save failed (network)');
+    return { ok:false };
+  } finally {
+    SETTINGS_STATE.busy = false;
+    try { renderSettingsPanel(); } catch (e2) {}
+  }
+}
+
+function pinOkLooksGood(j){
+  if (!j || typeof j !== 'object') return null;
+  if (j.ok === true || j.success === true || j.valid === true || j.pin_ok === true) return true;
+  if (j.ok === false || j.success === false || j.valid === false || j.pin_ok === false) return false;
+  const s = String(j.status || j.result || '').toLowerCase();
+  if (s === 'ok' || s === 'success' || s === 'valid' || s === 'true' || s === 'pass') return true;
+  if (s === 'fail' || s === 'failed' || s === 'error' || s === 'false' || s === 'invalid') return false;
+  return null;
+}
+
+async function fetchLastPinOk(){
+  try {
+    const r = await fetch('/local/family-album/last_pin_ok.json?v=' + Date.now(), {cache:'no-store'});
+    if (!r.ok) return null;
+    const raw = await r.text();
+    try { return JSON.parse(raw); } catch (e) { return null; }
+  } catch (e2) { return null; }
+}
+
+async function verifyPinRemote(pin){
+  pin = String(pin || '').trim();
+  if (!pin) return { ok:false, error:'Enter PIN' };
+  if (!SET_PIN_WEBHOOK) return { ok:false, error:'PIN webhook missing' };
+  try {
+    const r = await fetch('/api/webhook/' + SET_PIN_WEBHOOK, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ pin: pin }),
+      cache: 'no-store'
+    });
+    if (!(r.ok || r.status === 200 || r.status === 201)) {
+      return { ok:false, error:'Verify failed (HTTP ' + r.status + ')' };
+    }
+  } catch (e) {
+    return { ok:false, error:'Verify failed (network)' };
+  }
+  let lastErr = 'Could not verify PIN';
+  for (let attempt = 0; attempt < 6; attempt++) {
+    if (attempt) await sleepMs(250 + attempt * 120);
+    const st = await fetchLastPinOk();
+    const look = pinOkLooksGood(st);
+    if (look === true) return { ok:true };
+    if (look === false) {
+      lastErr = (st && (st.error || st.message || st.detail)) || 'Incorrect PIN';
+    }
+  }
+  return { ok:false, error:lastErr };
+}
+
+function openPinModal(reason){
+  const modal = document.getElementById('fa-pin-modal');
+  const input = document.getElementById('fa-pin-input');
+  const msg = document.getElementById('fa-pin-msg');
+  const sub = document.getElementById('fa-pin-sub');
+  if (sub) {
+    sub.textContent = (reason === 'gear')
+      ? 'Enter PIN to edit layout'
+      : 'Enter PIN to open Settings';
+  }
+  if (msg) msg.textContent = '';
+  if (input) input.value = '';
+  if (modal) {
+    modal.classList.add('on');
+    modal.setAttribute('aria-hidden', 'false');
+  }
+  try { if (input) setTimeout(function(){ input.focus(); }, 50); } catch (e) {}
+}
+
+function closePinModal(){
+  const modal = document.getElementById('fa-pin-modal');
+  const input = document.getElementById('fa-pin-input');
+  if (modal) {
+    modal.classList.remove('on');
+    modal.setAttribute('aria-hidden', 'true');
+  }
+  if (input) input.value = '';
+  SETTINGS_STATE.pendingPinAction = null;
+}
+
+function requestPinUnlock(action){
+  SETTINGS_STATE.pendingPinAction = action || { type: 'settings' };
+  openPinModal((action && action.type) || 'settings');
+}
+
+async function submitPinUnlock(){
+  const input = document.getElementById('fa-pin-input');
+  const msg = document.getElementById('fa-pin-msg');
+  const pin = input ? String(input.value || '').trim() : '';
+  if (!pin) {
+    if (msg) msg.textContent = 'Enter PIN';
+    return;
+  }
+  if (msg) msg.textContent = 'Checking…';
+  const res = await verifyPinRemote(pin);
+  if (!res.ok) {
+    if (msg) msg.textContent = res.error || 'Incorrect PIN';
+    if (input) { input.value = ''; try { input.focus(); } catch (e) {} }
+    return;
+  }
+  SETTINGS_STATE.unlockedUntil = Date.now() + 5 * 60 * 1000; // 5 min session
+  const action = SETTINGS_STATE.pendingPinAction;
+  closePinModal();
+  if (action && action.type === 'gear') {
+    setHudEditMode(true);
+  } else {
+    setHubTab('settings');
+  }
+}
+
+function inSettingsSleepWindow(){
+  const sleep = SETTINGS_STATE.sleep || {};
+  if (!sleep.enabled) return false;
+  const p = etParts();
+  const now = p.h * 3600 + p.m * 60 + p.s;
+  const start = parseHHMMSS(sleep.start);
+  const end = parseHHMMSS(sleep.end);
+  if (start === end) return true;
+  if (start < end) return now >= start && now < end;
+  return now >= start || now < end;
+}
+
+function applySleepVeil(){
+  const veil = document.getElementById('fa-sleep-veil');
+  if (!veil) return;
+  if (!IS_FULL_FRAME || typeof standbyOn === 'undefined' || !standbyOn) {
+    veil.classList.remove('on');
+    veil.style.opacity = '0';
+    veil.setAttribute('aria-hidden', 'true');
+    return;
+  }
+  const awake = Date.now() < (SETTINGS_STATE.sleepAwakeUntil || 0);
+  const should = inSettingsSleepWindow() && !awake;
+  if (should) {
+    const dim = Math.max(0.05, Math.min(0.95, Number(SETTINGS_STATE.sleep.dim) || 0.3));
+    veil.classList.add('on');
+    veil.style.opacity = String(dim);
+    veil.setAttribute('aria-hidden', 'false');
+  } else {
+    veil.classList.remove('on');
+    veil.style.opacity = '0';
+    veil.setAttribute('aria-hidden', 'true');
+  }
+}
+
+function wakeFromSleepBriefly(){
+  SETTINGS_STATE.sleepAwakeUntil = Date.now() + 45000; // 45s
+  applySleepVeil();
+  try { noteUserActivity(); } catch (e) {}
+}
+
+function noteUserActivity(){
+  lastUserActivityAt = Date.now();
+}
+
+function syncIdleHomeTimer(){
+  if (idleHomeTimer) {
+    clearInterval(idleHomeTimer);
+    idleHomeTimer = null;
+  }
+  if (!IS_FULL_FRAME) return;
+  const secs = Math.max(30, Number(SETTINGS_STATE.idle_home_seconds) || 120);
+  idleHomeTimer = setInterval(function(){
+    try {
+      if (typeof standbyOn !== 'undefined' && !standbyOn) return;
+      if (hubTab === 'home') return;
+      const pinModal = document.getElementById('fa-pin-modal');
+      if (pinModal && pinModal.classList.contains('on')) return;
+      const ae = document.activeElement;
+      if (ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA') &&
+          ae.closest && (ae.closest('#fa-settings') || ae.closest('#fa-pin-modal') ||
+            ae.closest('#fa-board') || ae.closest('#fa-lists') || ae.closest('#fa-meals') ||
+            ae.closest('#fa-tasks') || ae.closest('#cw-add-modal'))) {
+        return;
+      }
+      const idleMs = Date.now() - (lastUserActivityAt || 0);
+      if (idleMs >= secs * 1000) {
+        setHubTab('home');
+        try { if (hudEditMode) setHudEditMode(false); } catch (e) {}
+      }
+    } catch (e2) {}
+  }, 2000);
+}
+
+function bindSettingsPanelOnce(){
+  const panel = document.getElementById('fa-settings');
+  if (panel && !panel._boundStop) {
+    panel._boundStop = true;
+    ['pointerdown','touchstart','click','keydown','keyup','keypress','input'].forEach(function(evt){
+      panel.addEventListener(evt, function(ev){
+        try { ev.stopPropagation(); } catch (e) {}
+        try { noteUserActivity(); } catch (e2) {}
+      }, false);
+    });
+  }
+
+  const pinEn = document.getElementById('fa-set-pin-enabled');
+  if (pinEn && !pinEn._bound) {
+    pinEn._bound = true;
+    pinEn.addEventListener('click', async function(ev){
+      try { ev.preventDefault(); ev.stopPropagation(); } catch (e) {}
+      const next = !SETTINGS_STATE.pin_enabled;
+      if (next && !SETTINGS_STATE.pin_set) {
+        setSettingsStatus('Set a PIN first, then enable lock');
+        return;
+      }
+      SETTINGS_STATE.pin_enabled = next;
+      setToggleEl(pinEn, next);
+      await postSettingsUpdate({ pin_enabled: next });
+    }, false);
+  }
+
+  const pinSave = document.getElementById('fa-set-pin-save');
+  if (pinSave && !pinSave._bound) {
+    pinSave._bound = true;
+    pinSave.addEventListener('click', async function(ev){
+      try { ev.preventDefault(); ev.stopPropagation(); } catch (e) {}
+      const a = document.getElementById('fa-set-pin-new');
+      const b = document.getElementById('fa-set-pin-confirm');
+      const p1 = a ? String(a.value || '').trim() : '';
+      const p2 = b ? String(b.value || '').trim() : '';
+      if (!p1 || p1.length < 4) {
+        setSettingsStatus('PIN must be at least 4 digits');
+        return;
+      }
+      if (p1 !== p2) {
+        setSettingsStatus('PIN confirmation does not match');
+        return;
+      }
+      const partial = { pin: p1 };
+      if (!SETTINGS_STATE.pin_set) partial.pin_enabled = true;
+      const r = await postSettingsUpdate(partial);
+      if (a) a.value = '';
+      if (b) b.value = '';
+      if (r && r.ok) {
+        SETTINGS_STATE.unlockedUntil = Date.now() + 5 * 60 * 1000;
+      }
+    }, false);
+  }
+
+  const pinClear = document.getElementById('fa-set-pin-clear');
+  if (pinClear && !pinClear._bound) {
+    pinClear._bound = true;
+    pinClear.addEventListener('click', async function(ev){
+      try { ev.preventDefault(); ev.stopPropagation(); } catch (e) {}
+      await postSettingsUpdate({ pin: '', pin_enabled: false });
+      SETTINGS_STATE.unlockedUntil = 0;
+    }, false);
+  }
+
+  const sleepEn = document.getElementById('fa-set-sleep-enabled');
+  if (sleepEn && !sleepEn._bound) {
+    sleepEn._bound = true;
+    sleepEn.addEventListener('click', async function(ev){
+      try { ev.preventDefault(); ev.stopPropagation(); } catch (e) {}
+      const next = !SETTINGS_STATE.sleep.enabled;
+      SETTINGS_STATE.sleep.enabled = next;
+      setToggleEl(sleepEn, next);
+      await postSettingsUpdate({ sleep: Object.assign({}, SETTINGS_STATE.sleep, { enabled: next }) });
+    }, false);
+  }
+
+  const dimEl = document.getElementById('fa-set-sleep-dim');
+  if (dimEl && !dimEl._bound) {
+    dimEl._bound = true;
+    dimEl.addEventListener('input', function(){
+      const v = Number(dimEl.value);
+      const lab = document.getElementById('fa-set-sleep-dim-val');
+      if (lab) lab.textContent = (Number.isFinite(v) ? v : 0.3).toFixed(2);
+    }, false);
+  }
+
+  const sleepSave = document.getElementById('fa-set-sleep-save');
+  if (sleepSave && !sleepSave._bound) {
+    sleepSave._bound = true;
+    sleepSave.addEventListener('click', async function(ev){
+      try { ev.preventDefault(); ev.stopPropagation(); } catch (e) {}
+      const start = normalizeHHMM((document.getElementById('fa-set-sleep-start') || {}).value, '22:00');
+      const end = normalizeHHMM((document.getElementById('fa-set-sleep-end') || {}).value, '07:00');
+      let dim = Number((document.getElementById('fa-set-sleep-dim') || {}).value);
+      if (!Number.isFinite(dim)) dim = 0.3;
+      dim = Math.max(0.05, Math.min(0.95, dim));
+      const sleep = {
+        enabled: !!SETTINGS_STATE.sleep.enabled,
+        start: start,
+        end: end,
+        dim: dim
+      };
+      SETTINGS_STATE.sleep = sleep;
+      await postSettingsUpdate({ sleep: sleep });
+    }, false);
+  }
+
+  const idleSave = document.getElementById('fa-set-idle-save');
+  if (idleSave && !idleSave._bound) {
+    idleSave._bound = true;
+    idleSave.addEventListener('click', async function(ev){
+      try { ev.preventDefault(); ev.stopPropagation(); } catch (e) {}
+      let n = Number((document.getElementById('fa-set-idle') || {}).value);
+      if (!Number.isFinite(n)) n = 120;
+      n = Math.max(30, Math.min(3600, Math.round(n)));
+      SETTINGS_STATE.idle_home_seconds = n;
+      await postSettingsUpdate({ idle_home_seconds: n });
+    }, false);
+  }
+
+  const funEn = document.getElementById('fa-set-fun-unlocked');
+  if (funEn && !funEn._bound) {
+    funEn._bound = true;
+    funEn.addEventListener('click', async function(ev){
+      try { ev.preventDefault(); ev.stopPropagation(); } catch (e) {}
+      const next = !SETTINGS_STATE.fun_unlocked;
+      SETTINGS_STATE.fun_unlocked = next;
+      setToggleEl(funEn, next);
+      await postSettingsUpdate({ fun_unlocked: next });
+    }, false);
+  }
+
+  const pinOk = document.getElementById('fa-pin-ok');
+  const pinCancel = document.getElementById('fa-pin-cancel');
+  const pinInput = document.getElementById('fa-pin-input');
+  const pinModal = document.getElementById('fa-pin-modal');
+  if (pinOk && !pinOk._bound) {
+    pinOk._bound = true;
+    pinOk.addEventListener('click', function(ev){
+      try { ev.preventDefault(); ev.stopPropagation(); } catch (e) {}
+      submitPinUnlock();
+    }, false);
+  }
+  if (pinCancel && !pinCancel._bound) {
+    pinCancel._bound = true;
+    pinCancel.addEventListener('click', function(ev){
+      try { ev.preventDefault(); ev.stopPropagation(); } catch (e) {}
+      closePinModal();
+    }, false);
+  }
+  if (pinInput && !pinInput._bound) {
+    pinInput._bound = true;
+    pinInput.addEventListener('keydown', function(ev){
+      if (ev.key === 'Enter') {
+        try { ev.preventDefault(); ev.stopPropagation(); } catch (e) {}
+        submitPinUnlock();
+      }
+      if (ev.key === 'Escape') {
+        try { ev.preventDefault(); ev.stopPropagation(); } catch (e) {}
+        closePinModal();
+      }
+    }, false);
+  }
+  if (pinModal && !pinModal._boundBg) {
+    pinModal._boundBg = true;
+    pinModal.addEventListener('click', function(ev){
+      if (ev.target === pinModal) closePinModal();
+    }, false);
+  }
+
+  const veil = document.getElementById('fa-sleep-veil');
+  if (veil && !veil._bound) {
+    veil._bound = true;
+    const wake = function(ev){
+      try { ev.preventDefault(); ev.stopPropagation(); } catch (e) {}
+      wakeFromSleepBriefly();
+    };
+    veil.addEventListener('click', wake, false);
+    veil.addEventListener('pointerup', function(ev){
+      if (ev.pointerType === 'mouse') return;
+      wake(ev);
+    }, false);
+  }
+
+  if (!document.documentElement._faIdleBound) {
+    document.documentElement._faIdleBound = true;
+    ['pointerdown','touchstart','keydown','click'].forEach(function(evt){
+      document.addEventListener(evt, function(){
+        try { noteUserActivity(); } catch (e) {}
+      }, true);
+    });
+  }
+}
 
 
 /* ---- Meals (meal_plan.json + recipes.json + set/clear/upsert webhooks) ---- */
@@ -8053,7 +8911,7 @@ box.addEventListener('touchstart', (e) => {
   if (!standbyOn) return;
   // Ignore if Exit / FS / Fit control
   const tgt = e.target;
-  if (tgt && (tgt.id === 'sb-exit' || tgt.id === 'sb-fs' || tgt.id === 'sb-fit' || tgt.id === 'sb-hud-gear' || (tgt.closest && tgt.closest('#sb-exit,#sb-fs,#sb-fit,#sb-hud-gear,#fa-hub-nav,#fa-tasks,#fa-lists,#fa-meals,#fa-meal-slot-modal,#fa-board,#cw-add-modal,#cw-del-modal')))) return;
+  if (tgt && (tgt.id === 'sb-exit' || tgt.id === 'sb-fs' || tgt.id === 'sb-fit' || tgt.id === 'sb-hud-gear' || (tgt.closest && tgt.closest('#sb-exit,#sb-fs,#sb-fit,#sb-hud-gear,#fa-hub-nav,#fa-tasks,#fa-lists,#fa-meals,#fa-meal-slot-modal,#fa-board,#fa-settings,#fa-pin-modal,#fa-sleep-veil,#cw-add-modal,#cw-del-modal')))) return;
 
   if (e.touches.length >= 2) {
     if (shouldPhotoPinch(e)) {
@@ -8108,7 +8966,7 @@ document.addEventListener('touchstart', (e) => {
   if (!standbyOn) return;
   if (!e.touches || e.touches.length < 2) return;
   const tgt = e.target;
-  if (tgt && tgt.closest && tgt.closest('#sb-exit,#sb-fs,#sb-fit,#sb-hud-gear,#fa-hub-nav,#fa-tasks,#fa-lists,#fa-meals,#fa-meal-slot-modal,#fa-board,#cw-add-modal,#cw-del-modal')) return;
+  if (tgt && tgt.closest && tgt.closest('#sb-exit,#sb-fs,#sb-fit,#sb-hud-gear,#fa-hub-nav,#fa-tasks,#fa-lists,#fa-meals,#fa-meal-slot-modal,#fa-board,#fa-settings,#fa-pin-modal,#fa-sleep-veil,#cw-add-modal,#cw-del-modal')) return;
   if (touchOnResizeHandle(e)) return;
   if (!shouldPhotoPinch(e)) return;
   uzOnPinchStart(e);
@@ -8386,6 +9244,13 @@ function startSlideshow(){
   try { bindListsPanelOnce(); } catch (e) {}
   try { bindMealsPanelOnce(); } catch (e) {}
   try { bindBoardPanelOnce(); } catch (e) {}
+  try { bindSettingsPanelOnce(); } catch (e) {}
+  try { loadSettingsData(); } catch (e) {}
+  try {
+    if (sleepCheckTimer) clearInterval(sleepCheckTimer);
+    sleepCheckTimer = setInterval(function(){ try { applySleepVeil(); } catch (e) {} }, 15000);
+  } catch (e) {}
+  try { syncIdleHomeTimer(); } catch (e) {}
   try { syncHubNavVisibility(); } catch (e) {}
   // legacy week/forecast drag disabled — combined #sb-calweather
   try { if (typeof loadLayout === 'function') loadLayout(); } catch (e) {}

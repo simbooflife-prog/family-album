@@ -1,0 +1,12 @@
+{
+  "pin": "",
+  "pin_enabled": false,
+  "sleep": {
+    "enabled": true,
+    "start": "22:00",
+    "end": "07:00",
+    "dim": 0.3
+  },
+  "idle_home_seconds": 120,
+  "fun_unlocked": false
+}

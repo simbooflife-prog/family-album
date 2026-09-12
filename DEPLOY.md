@@ -9,7 +9,7 @@ Internal build id lives in `frame.html` as `FRAME_BUILD` (also in the HTML comme
 
 1. Edit in git (`main` on this repo). Commit + push.
 2. Copy changed files **only** to SOT: `/homeassistant/www/family-album`.
-3. Bump every Lovelace iframe `?v=` (Overview + digital-frame). Suggested next: match `FRAME_BUILD` (currently `20260912-ui9`).
+3. Bump every Lovelace iframe `?v=` (Overview + digital-frame). Suggested next: match `FRAME_BUILD` (currently `20260912-ui10`).
 4. Verify checksums (see below). If `/config/www/family-album` still exists, md5 **both** paths — they must match (symlink).
 5. Hard refresh the frame (tablet / companion app / browser).
 
@@ -147,10 +147,29 @@ Same-origin from the frame iframe on HA:
 
 **Do not trust HTTP 200 alone:** after POST, the frame re-fetches `messages.json` with a short retry. Failures show in the Board status line. Sticky notes sort pinned-first; optional `author_id` uses the Tasks profile picker when set.
 
+
+## Settings webhooks (update + verify PIN) — ui10
+
+Frame reads (defensive if 404/empty):
+
+| File | Role |
+| --- | --- |
+| `/local/family-album/settings.json` | `{ pin, pin_enabled, sleep:{enabled,start,end,dim}, idle_home_seconds, fun_unlocked }` |
+| `/local/family-album/last_pin_ok.json` | Written by HA after verify_pin (defensive `ok` / `success` / `valid` / `pin_ok`) |
+
+Same-origin from the frame iframe on HA:
+
+| Action | Method | Path | Body |
+| --- | --- | --- | --- |
+| Update settings | `POST` | `/api/webhook/fa_set_upd_34332b41ce03c5d48a94a605` | Partial merge object (e.g. `{ pin_enabled }`, `{ sleep:{…} }`, `{ pin }`) |
+| Verify PIN | `POST` | `/api/webhook/fa_set_pin_9959ced132bab609265c8787` | `{ pin }` |
+
+**Do not trust HTTP 200 alone:** after update POST, re-fetch `settings.json`. After verify PIN, poll `last_pin_ok.json`. UI never displays the raw PIN — only enabled toggle + set/change fields. When `pin_enabled` and a PIN is already set, opening Settings or gear layout-edit requires PIN (first-time set is free). Sleep window dims via overlay (`sleep.dim`); tap wakes ~45s. Idle returns to Home after `idle_home_seconds`.
+
 ## Hub bottom nav
 
 - **Overview mini** (no `?standby=1`): hub nav **hidden** — guests see photo frame only (family hub disguise; no house controls).
-- **Full digital-frame** (`?standby=1`): bottom tabs Home | Week | Tasks | Lists | Meals | Board (+ muted soon: Fun, Settings).
+- **Full digital-frame** (`?standby=1`): bottom tabs Home | Week | Tasks | Lists | Meals | Board (+ muted soon: Fun). Settings enabled (ui10).
 
 ## Do not
 
