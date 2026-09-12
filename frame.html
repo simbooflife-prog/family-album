@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black"/>
 <title>Family Album Frame</title>
-<!-- frame FRAME_BUILD=20260912-ui11 v=20260912-ui11 (bump Lovelace ?v= on HA deploy) square-stage 1:1 photo-only-zoom hud-fixed gesture-lock layout-guides-edit-only snap-align hud-clock no-pill drag-clock calweather-combined swipe-weeks add-event delete-event week.json forecast.json preserve-add-modal-input overview-layout-lock gear-edit-mode save-touch-fix tasks-tab-shell hub-bottom-nav tasks-webhooks-claim-complete profile-picker lists-tab lists-webhooks-add-toggle-clear meals-tab meals-webhooks-set-clear-upsert board-tab board-webhooks-add-delete-pin settings-tab settings-pin-sleep-idle fun-tab-games fun-unlocked-gate games_state.json -->
+<!-- frame FRAME_BUILD=20260912-ui12 v=20260912-ui12 (bump Lovelace ?v= on HA deploy) square-stage 1:1 photo-only-zoom hud-fixed gesture-lock layout-guides-edit-only snap-align hud-clock no-pill drag-clock calweather-combined swipe-weeks add-event delete-event week.json forecast.json preserve-add-modal-input overview-layout-lock gear-edit-mode save-touch-fix tasks-tab-shell hub-bottom-nav tasks-webhooks-claim-complete profile-picker lists-tab lists-webhooks-add-toggle-clear meals-tab meals-webhooks-set-clear-upsert board-tab board-webhooks-add-delete-pin settings-tab settings-pin-sleep-idle fun-tab-games fun-unlocked-gate games_state.json -->
 <style>
   html,body{margin:0;height:100%;background:#0a1220;overflow:hidden;touch-action:manipulation;-webkit-user-select:none;user-select:none}
   html.standby-page,html.standby-page body{background:#000}
@@ -1790,10 +1790,10 @@
   #fa-settings{
     position:fixed;inset:0;z-index:2147482900;
     display:none;flex-direction:column;
-    padding:max(12px,env(safe-area-inset-top)) 14px calc(72px + env(safe-area-inset-bottom)) 14px;
+    padding:max(12px,env(safe-area-inset-top)) 16px calc(76px + env(safe-area-inset-bottom)) 16px;
     box-sizing:border-box;
-    background:rgba(6,10,18,.92);
-    backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+    background:rgba(6,10,18,.94);
+    backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
     color:#fff;pointer-events:auto;touch-action:manipulation;
     -webkit-user-select:none;user-select:none;
   }
@@ -1801,73 +1801,84 @@
   html.overview-mini #fa-settings{display:none!important}
   #fa-settings .fa-settings-head{
     display:flex;align-items:baseline;justify-content:space-between;gap:12px;
-    margin:0 0 10px;flex:0 0 auto;
+    margin:0 0 6px;flex:0 0 auto;
   }
   #fa-settings .fa-settings-head h2{
-    margin:0;font:800 22px/1.15 -apple-system,sans-serif;letter-spacing:.02em;
+    margin:0;font:800 24px/1.15 -apple-system,sans-serif;letter-spacing:.02em;
   }
   #fa-settings .fa-settings-sub{
     margin:0;font:600 12px/1.2 -apple-system,sans-serif;opacity:.65;
   }
   #fa-settings .fa-settings-status{
-    min-height:18px;margin:0 0 8px;font:600 12px/1.3 -apple-system,sans-serif;
+    min-height:18px;margin:0 0 10px;font:600 12px/1.3 -apple-system,sans-serif;
     color:rgba(180,210,255,.9);
   }
   #fa-settings .fa-settings-scroll{
     flex:1 1 auto;min-height:0;overflow:auto;-webkit-overflow-scrolling:touch;
-    padding-bottom:12px;
+    padding:0 2px 20px;scroll-padding-bottom:24px;
   }
+  #fa-settings .fa-set-section{
+    margin:0 0 18px;
+  }
+  #fa-settings .fa-set-section:last-child{margin-bottom:8px}
   #fa-settings .fa-set-sec{
-    margin:16px 0 8px;font:800 12px/1.2 -apple-system,sans-serif;
-    letter-spacing:.08em;text-transform:uppercase;opacity:.7;
+    display:flex;align-items:center;gap:8px;
+    margin:0 0 8px;padding:0 2px;
+    font:800 12px/1.2 -apple-system,sans-serif;
+    letter-spacing:.07em;text-transform:uppercase;opacity:.72;
   }
-  #fa-settings .fa-set-sec:first-child{margin-top:2px}
+  #fa-settings .fa-set-sec-ico{
+    font-size:14px;letter-spacing:0;text-transform:none;opacity:1;line-height:1;
+  }
   #fa-settings .fa-set-card{
-    padding:12px 14px;margin:0 0 10px;border-radius:14px;
-    background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);
+    padding:14px 14px 12px;margin:0;border-radius:16px;
+    background:rgba(255,255,255,.075);border:1px solid rgba(255,255,255,.12);
+    box-shadow:0 1px 0 rgba(255,255,255,.04) inset;
   }
+  #fa-settings .fa-set-card + .fa-set-card{margin-top:10px}
   #fa-settings .fa-set-row{
-    display:flex;align-items:center;justify-content:space-between;gap:12px;
-    margin:0 0 10px;
+    display:flex;align-items:center;justify-content:space-between;gap:14px;
+    margin:0 0 12px;min-height:44px;
   }
   #fa-settings .fa-set-row:last-child{margin-bottom:0}
   #fa-settings .fa-set-label{
-    font:700 14px/1.25 -apple-system,sans-serif;flex:1 1 auto;min-width:0;
+    font:700 15px/1.25 -apple-system,sans-serif;flex:1 1 auto;min-width:0;
   }
   #fa-settings .fa-set-hint{
-    display:block;margin-top:3px;font:600 11px/1.3 -apple-system,sans-serif;opacity:.6;
+    display:block;margin-top:4px;font:600 12px/1.35 -apple-system,sans-serif;opacity:.62;
   }
   #fa-settings .fa-toggle{
-    position:relative;flex:0 0 auto;width:52px;height:30px;border-radius:999px;
+    position:relative;flex:0 0 auto;width:54px;height:32px;border-radius:999px;
     border:1px solid rgba(255,255,255,.28);background:rgba(0,0,0,.35);
     cursor:pointer;padding:0;-webkit-tap-highlight-color:transparent;
   }
   #fa-settings .fa-toggle::after{
-    content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;
+    content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;
     background:#fff;transition:transform .18s ease;box-shadow:0 1px 4px rgba(0,0,0,.35);
   }
   #fa-settings .fa-toggle.on{background:rgba(76,175,80,.75);border-color:rgba(129,199,132,.9)}
   #fa-settings .fa-toggle.on::after{transform:translateX(22px)}
   #fa-settings .fa-toggle[disabled]{opacity:.4;pointer-events:none}
-  #fa-settings .fa-set-fields{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px}
-  #fa-settings .fa-set-field{flex:1 1 120px;min-width:100px}
+  #fa-settings .fa-set-fields{display:flex;flex-wrap:wrap;gap:12px;margin-top:4px}
+  #fa-settings .fa-set-field{flex:1 1 130px;min-width:110px}
   #fa-settings .fa-set-field label{
-    display:block;margin:0 0 4px;font:700 11px/1.2 -apple-system,sans-serif;opacity:.7;
+    display:block;margin:0 0 6px;font:700 11px/1.2 -apple-system,sans-serif;opacity:.72;
   }
   #fa-settings .fa-set-field input[type="text"],
   #fa-settings .fa-set-field input[type="password"],
   #fa-settings .fa-set-field input[type="time"],
   #fa-settings .fa-set-field input[type="number"]{
-    width:100%;box-sizing:border-box;padding:10px 12px;border-radius:10px;
+    width:100%;box-sizing:border-box;padding:12px 12px;border-radius:12px;
     border:1px solid rgba(255,255,255,.22);background:rgba(0,0,0,.35);color:#fff;
-    font:600 15px/1.2 -apple-system,sans-serif;-webkit-user-select:text;user-select:text;
+    font:600 16px/1.2 -apple-system,sans-serif;-webkit-user-select:text;user-select:text;
+    min-height:44px;
   }
-  #fa-settings .fa-set-field input[type="range"]{width:100%;accent-color:#7eb6ff}
-  #fa-settings .fa-set-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+  #fa-settings .fa-set-field input[type="range"]{width:100%;accent-color:#7eb6ff;min-height:32px}
+  #fa-settings .fa-set-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
   #fa-settings .fa-set-actions button{
-    min-height:40px;padding:0 14px;border-radius:12px;cursor:pointer;
+    min-height:44px;padding:0 16px;border-radius:12px;cursor:pointer;
     border:1px solid rgba(255,255,255,.28);background:rgba(255,255,255,.1);color:#fff;
-    font:700 13px/1 -apple-system,sans-serif;-webkit-tap-highlight-color:transparent;
+    font:700 14px/1 -apple-system,sans-serif;-webkit-tap-highlight-color:transparent;
   }
   #fa-settings .fa-set-actions button.primary{
     background:rgba(80,140,255,.55);border-color:rgba(140,180,255,.7);
@@ -1875,12 +1886,43 @@
   #fa-settings .fa-set-actions button:active{transform:scale(.96)}
   #fa-settings .fa-set-actions button[disabled]{opacity:.45;pointer-events:none}
   #fa-settings .fa-pin-badge{
-    display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;
-    font:700 11px/1.2 -apple-system,sans-serif;
+    display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;
+    font:700 12px/1.2 -apple-system,sans-serif;
     background:rgba(76,175,80,.25);border:1px solid rgba(129,199,132,.45);
   }
   #fa-settings .fa-pin-badge.off{
     background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18);opacity:.75;
+  }
+  #fa-settings .fa-set-disclose{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    width:100%;margin:4px 0 0;padding:12px 4px;min-height:44px;
+    border:0;border-top:1px solid rgba(255,255,255,.1);
+    background:transparent;color:#fff;cursor:pointer;text-align:left;
+    font:700 14px/1.2 -apple-system,sans-serif;-webkit-tap-highlight-color:transparent;
+  }
+  #fa-settings .fa-set-disclose .chev{
+    flex:0 0 auto;opacity:.55;font-size:12px;transition:transform .18s ease;
+  }
+  #fa-settings .fa-set-disclose[aria-expanded="true"] .chev{transform:rotate(90deg)}
+  #fa-settings .fa-set-disclose-body{
+    padding:4px 0 2px;border-top:0;
+  }
+  #fa-settings .fa-set-disclose-body[hidden]{display:none!important}
+  #fa-settings .fa-set-sec-toggle{
+    display:flex;align-items:center;justify-content:space-between;gap:8px;
+    width:100%;margin:0 0 8px;padding:10px 2px;min-height:44px;
+    border:0;background:transparent;color:rgba(255,255,255,.78);cursor:pointer;
+    font:800 12px/1.2 -apple-system,sans-serif;letter-spacing:.07em;text-transform:uppercase;
+    -webkit-tap-highlight-color:transparent;
+  }
+  #fa-settings .fa-set-sec-toggle .chev{opacity:.55;font-size:12px;transition:transform .18s ease}
+  #fa-settings .fa-set-sec-toggle[aria-expanded="true"] .chev{transform:rotate(90deg)}
+  #fa-settings .fa-set-muted-row{
+    padding:10px 0;border-bottom:1px solid rgba(255,255,255,.08);
+  }
+  #fa-settings .fa-set-muted-row:last-child{border-bottom:0;padding-bottom:2px}
+  #fa-settings .fa-set-about .fa-set-mono{
+    font:700 13px/1.3 ui-monospace,SFMono-Regular,Menlo,monospace;opacity:.85;
   }
   html.hub-tab-settings #sb-calweather,
   html.hub-tab-settings #sb-week,
@@ -2156,87 +2198,140 @@
 <div id="fa-settings" aria-hidden="true">
   <div class="fa-settings-head">
     <h2>Settings</h2>
-    <p class="fa-settings-sub" id="fa-settings-sub">Child lock · sleep · idle</p>
+    <p class="fa-settings-sub" id="fa-settings-sub">Family hub</p>
   </div>
   <div class="fa-settings-status" id="fa-settings-status" role="status" aria-live="polite"></div>
   <div class="fa-settings-scroll" id="fa-settings-body">
-    <div class="fa-set-sec">Child lock</div>
-    <div class="fa-set-card" id="fa-set-pin-card">
-      <div class="fa-set-row">
-        <div class="fa-set-label">PIN lock
-          <span class="fa-set-hint">Require PIN for Settings + layout edit</span>
-        </div>
-        <button type="button" class="fa-toggle" id="fa-set-pin-enabled" aria-pressed="false" aria-label="Enable PIN lock"></button>
-      </div>
-      <div class="fa-set-row">
-        <span class="fa-pin-badge off" id="fa-set-pin-badge">No PIN set</span>
-      </div>
-      <div class="fa-set-fields" id="fa-set-pin-fields">
-        <div class="fa-set-field">
-          <label for="fa-set-pin-new" id="fa-set-pin-new-label">Set PIN</label>
-          <input type="password" id="fa-set-pin-new" inputmode="numeric" pattern="[0-9]*" maxlength="8" autocomplete="new-password" placeholder="••••" />
-        </div>
-        <div class="fa-set-field">
-          <label for="fa-set-pin-confirm">Confirm</label>
-          <input type="password" id="fa-set-pin-confirm" inputmode="numeric" pattern="[0-9]*" maxlength="8" autocomplete="new-password" placeholder="••••" />
-        </div>
-      </div>
-      <div class="fa-set-actions">
-        <button type="button" class="primary" id="fa-set-pin-save">Save PIN</button>
-        <button type="button" id="fa-set-pin-clear" hidden>Clear PIN</button>
-      </div>
-    </div>
 
-    <div class="fa-set-sec">Sleep</div>
-    <div class="fa-set-card">
-      <div class="fa-set-row">
-        <div class="fa-set-label">Sleep schedule
-          <span class="fa-set-hint">Dim screen overnight · tap to wake briefly</span>
+    <section class="fa-set-section" data-section="security" aria-labelledby="fa-set-sec-security">
+      <h3 class="fa-set-sec" id="fa-set-sec-security"><span class="fa-set-sec-ico" aria-hidden="true">🔒</span> Security &amp; Privacy</h3>
+      <div class="fa-set-card" id="fa-set-pin-card">
+        <div class="fa-set-row">
+          <div class="fa-set-label">PIN lock
+            <span class="fa-set-hint">Require PIN for Settings + layout edit</span>
+          </div>
+          <button type="button" class="fa-toggle" id="fa-set-pin-enabled" aria-pressed="false" aria-label="Enable PIN lock"></button>
         </div>
-        <button type="button" class="fa-toggle" id="fa-set-sleep-enabled" aria-pressed="false" aria-label="Enable sleep schedule"></button>
+        <div class="fa-set-row">
+          <span class="fa-pin-badge off" id="fa-set-pin-badge">No PIN set</span>
+        </div>
+        <button type="button" class="fa-set-disclose" id="fa-set-pin-disclose" aria-expanded="false" aria-controls="fa-set-pin-disclose-body">
+          <span id="fa-set-pin-disclose-label">Manage PIN</span>
+          <span class="chev" aria-hidden="true">›</span>
+        </button>
+        <div class="fa-set-disclose-body" id="fa-set-pin-disclose-body" hidden>
+          <div class="fa-set-fields" id="fa-set-pin-fields">
+            <div class="fa-set-field">
+              <label for="fa-set-pin-new" id="fa-set-pin-new-label">Set PIN</label>
+              <input type="password" id="fa-set-pin-new" inputmode="numeric" pattern="[0-9]*" maxlength="8" autocomplete="new-password" placeholder="••••" />
+            </div>
+            <div class="fa-set-field">
+              <label for="fa-set-pin-confirm">Confirm</label>
+              <input type="password" id="fa-set-pin-confirm" inputmode="numeric" pattern="[0-9]*" maxlength="8" autocomplete="new-password" placeholder="••••" />
+            </div>
+          </div>
+          <div class="fa-set-actions">
+            <button type="button" class="primary" id="fa-set-pin-save">Save PIN</button>
+            <button type="button" id="fa-set-pin-clear" hidden>Clear PIN</button>
+          </div>
+        </div>
       </div>
-      <div class="fa-set-fields">
-        <div class="fa-set-field">
-          <label for="fa-set-sleep-start">Start</label>
-          <input type="time" id="fa-set-sleep-start" value="22:00" />
-        </div>
-        <div class="fa-set-field">
-          <label for="fa-set-sleep-end">End</label>
-          <input type="time" id="fa-set-sleep-end" value="07:00" />
-        </div>
-        <div class="fa-set-field" style="flex:1 1 100%">
-          <label for="fa-set-sleep-dim">Dim <span id="fa-set-sleep-dim-val">0.30</span></label>
-          <input type="range" id="fa-set-sleep-dim" min="0.05" max="0.95" step="0.05" value="0.3" />
-        </div>
-      </div>
-      <div class="fa-set-actions">
-        <button type="button" class="primary" id="fa-set-sleep-save">Save sleep</button>
-      </div>
-    </div>
+    </section>
 
-    <div class="fa-set-sec">Idle</div>
-    <div class="fa-set-card">
-      <div class="fa-set-fields">
-        <div class="fa-set-field">
-          <label for="fa-set-idle">Return to Home after (seconds)</label>
-          <input type="number" id="fa-set-idle" min="30" max="3600" step="10" value="120" />
+    <section class="fa-set-section" data-section="display" aria-labelledby="fa-set-sec-display">
+      <h3 class="fa-set-sec" id="fa-set-sec-display"><span class="fa-set-sec-ico" aria-hidden="true">🌙</span> Display &amp; Sleep</h3>
+      <div class="fa-set-card">
+        <div class="fa-set-row">
+          <div class="fa-set-label">Sleep schedule
+            <span class="fa-set-hint">Dim screen overnight · tap to wake briefly</span>
+          </div>
+          <button type="button" class="fa-toggle" id="fa-set-sleep-enabled" aria-pressed="false" aria-label="Enable sleep schedule"></button>
+        </div>
+        <div class="fa-set-disclose-body" id="fa-set-sleep-details">
+          <div class="fa-set-fields">
+            <div class="fa-set-field">
+              <label for="fa-set-sleep-start">Start</label>
+              <input type="time" id="fa-set-sleep-start" value="22:00" />
+            </div>
+            <div class="fa-set-field">
+              <label for="fa-set-sleep-end">End</label>
+              <input type="time" id="fa-set-sleep-end" value="07:00" />
+            </div>
+            <div class="fa-set-field" style="flex:1 1 100%">
+              <label for="fa-set-sleep-dim">Dim <span id="fa-set-sleep-dim-val">0.30</span></label>
+              <input type="range" id="fa-set-sleep-dim" min="0.05" max="0.95" step="0.05" value="0.3" />
+            </div>
+          </div>
+          <div class="fa-set-actions">
+            <button type="button" class="primary" id="fa-set-sleep-save">Save sleep</button>
+          </div>
         </div>
       </div>
-      <div class="fa-set-hint" style="margin:6px 0 8px">No touch on the full frame → Home / photos</div>
-      <div class="fa-set-actions">
-        <button type="button" class="primary" id="fa-set-idle-save">Save idle</button>
-      </div>
-    </div>
+    </section>
 
-    <div class="fa-set-sec">Fun</div>
-    <div class="fa-set-card">
-      <div class="fa-set-row">
-        <div class="fa-set-label">Unlock Fun tab
-          <span class="fa-set-hint">When off, Fun tab shows a locked message</span>
+    <section class="fa-set-section" data-section="home" aria-labelledby="fa-set-sec-home">
+      <h3 class="fa-set-sec" id="fa-set-sec-home"><span class="fa-set-sec-ico" aria-hidden="true">🏠</span> Home &amp; Idle</h3>
+      <div class="fa-set-card">
+        <div class="fa-set-fields">
+          <div class="fa-set-field" style="flex:1 1 100%">
+            <label for="fa-set-idle">Return to Home after (seconds)</label>
+            <input type="number" id="fa-set-idle" min="30" max="3600" step="10" value="120" />
+          </div>
         </div>
-        <button type="button" class="fa-toggle" id="fa-set-fun-unlocked" aria-pressed="false" aria-label="Unlock Fun tab"></button>
+        <p class="fa-set-hint" style="margin:8px 0 0">No touch on the full frame → Home / photos. Layout edit stays on the Home gear — not here.</p>
+        <div class="fa-set-actions">
+          <button type="button" class="primary" id="fa-set-idle-save">Save idle</button>
+        </div>
       </div>
-    </div>
+    </section>
+
+    <section class="fa-set-section" data-section="fun" aria-labelledby="fa-set-sec-fun">
+      <h3 class="fa-set-sec" id="fa-set-sec-fun"><span class="fa-set-sec-ico" aria-hidden="true">🎮</span> Fun &amp; Kids</h3>
+      <div class="fa-set-card">
+        <div class="fa-set-row">
+          <div class="fa-set-label">Unlock Fun tab
+            <span class="fa-set-hint">When off, Fun shows a locked message</span>
+          </div>
+          <button type="button" class="fa-toggle" id="fa-set-fun-unlocked" aria-pressed="false" aria-label="Unlock Fun tab"></button>
+        </div>
+      </div>
+    </section>
+
+    <section class="fa-set-section fa-set-advanced" data-section="advanced">
+      <button type="button" class="fa-set-sec-toggle" id="fa-set-adv-toggle" aria-expanded="false" aria-controls="fa-set-adv-body">
+        <span><span class="fa-set-sec-ico" aria-hidden="true">⋯</span> Advanced</span>
+        <span class="chev" aria-hidden="true">›</span>
+      </button>
+      <div class="fa-set-card" id="fa-set-adv-body" hidden>
+        <div class="fa-set-muted-row">
+          <div class="fa-set-label">Profiles
+            <span class="fa-set-hint">People &amp; colors live on Tasks / Fun pickers — not duplicated here</span>
+          </div>
+        </div>
+        <div class="fa-set-muted-row">
+          <div class="fa-set-label">Rewards
+            <span class="fa-set-hint">Stars catalog stays with Tasks — future Settings link only if needed</span>
+          </div>
+        </div>
+        <div class="fa-set-muted-row">
+          <div class="fa-set-label">Layout edit
+            <span class="fa-set-hint">Use the Home gear (PIN-gated when lock is on)</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="fa-set-section" data-section="about" aria-labelledby="fa-set-sec-about">
+      <h3 class="fa-set-sec" id="fa-set-sec-about"><span class="fa-set-sec-ico" aria-hidden="true">ℹ️</span> About</h3>
+      <div class="fa-set-card fa-set-about">
+        <div class="fa-set-row">
+          <div class="fa-set-label">Family Album Frame
+            <span class="fa-set-hint">Build <span class="fa-set-mono" id="fa-set-build">—</span></span>
+          </div>
+        </div>
+      </div>
+    </section>
+
   </div>
 </div>
 
@@ -2274,7 +2369,7 @@
 
 <script>
 /* Identifiable deploy build — bump Lovelace iframe ?v= separately on HA. */
-const FRAME_BUILD = '20260912-ui11';
+const FRAME_BUILD = '20260912-ui12';
 try { window.FRAME_BUILD = FRAME_BUILD; } catch (e) {}
 const FALLBACK = [
   "/local/family-album/filler_forest.jpg",
@@ -6747,9 +6842,33 @@ function setToggleEl(el, on){
   el.setAttribute('aria-pressed', on ? 'true' : 'false');
 }
 
+function syncSettingsDisclosures(){
+  const sleepDetails = document.getElementById('fa-set-sleep-details');
+  if (sleepDetails) {
+    const show = !!SETTINGS_STATE.sleep.enabled;
+    sleepDetails.hidden = !show;
+  }
+  const pinDisclose = document.getElementById('fa-set-pin-disclose');
+  const pinBody = document.getElementById('fa-set-pin-disclose-body');
+  const pinLabel = document.getElementById('fa-set-pin-disclose-label');
+  if (pinLabel) pinLabel.textContent = SETTINGS_STATE.pin_set ? 'Change / clear PIN' : 'Set PIN';
+  // Keep expanded state if user opened it; auto-open when no PIN yet
+  if (pinBody && pinDisclose) {
+    const forceOpen = !SETTINGS_STATE.pin_set;
+    const open = forceOpen || pinDisclose.getAttribute('aria-expanded') === 'true';
+    pinBody.hidden = !open;
+    pinDisclose.setAttribute('aria-expanded', open ? 'true' : 'false');
+  }
+}
+
 function renderSettingsPanel(){
   const sub = document.getElementById('fa-settings-sub');
-  if (sub) sub.textContent = 'Child lock · sleep · idle';
+  if (sub) sub.textContent = 'Security · sleep · idle · fun';
+  const buildEl = document.getElementById('fa-set-build');
+  if (buildEl) {
+    try { buildEl.textContent = String(FRAME_BUILD || window.FRAME_BUILD || '—'); }
+    catch (e) { buildEl.textContent = '—'; }
+  }
   if (SETTINGS_STATE.loadError && !SETTINGS_STATE.loaded) {
     setSettingsStatus(SETTINGS_STATE.loadError);
   } else {
@@ -6785,6 +6904,8 @@ function renderSettingsPanel(){
 
   const idleEl = document.getElementById('fa-set-idle');
   if (idleEl) idleEl.value = String(SETTINGS_STATE.idle_home_seconds);
+
+  try { syncSettingsDisclosures(); } catch (e) {}
 
   // Never leave raw PIN in the change fields after render
   const pinNew = document.getElementById('fa-set-pin-new');
@@ -7034,6 +7155,32 @@ function bindSettingsPanelOnce(){
     });
   }
 
+  const pinDisclose = document.getElementById('fa-set-pin-disclose');
+  if (pinDisclose && !pinDisclose._bound) {
+    pinDisclose._bound = true;
+    pinDisclose.addEventListener('click', function(ev){
+      try { ev.preventDefault(); ev.stopPropagation(); } catch (e) {}
+      const body = document.getElementById('fa-set-pin-disclose-body');
+      if (!body) return;
+      const open = pinDisclose.getAttribute('aria-expanded') !== 'true';
+      pinDisclose.setAttribute('aria-expanded', open ? 'true' : 'false');
+      body.hidden = !open;
+    }, false);
+  }
+
+  const advToggle = document.getElementById('fa-set-adv-toggle');
+  if (advToggle && !advToggle._bound) {
+    advToggle._bound = true;
+    advToggle.addEventListener('click', function(ev){
+      try { ev.preventDefault(); ev.stopPropagation(); } catch (e) {}
+      const body = document.getElementById('fa-set-adv-body');
+      if (!body) return;
+      const open = advToggle.getAttribute('aria-expanded') !== 'true';
+      advToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+      body.hidden = !open;
+    }, false);
+  }
+
   const pinEn = document.getElementById('fa-set-pin-enabled');
   if (pinEn && !pinEn._bound) {
     pinEn._bound = true;
@@ -7096,6 +7243,7 @@ function bindSettingsPanelOnce(){
       const next = !SETTINGS_STATE.sleep.enabled;
       SETTINGS_STATE.sleep.enabled = next;
       setToggleEl(sleepEn, next);
+      try { syncSettingsDisclosures(); } catch (e2) {}
       await postSettingsUpdate({ sleep: Object.assign({}, SETTINGS_STATE.sleep, { enabled: next }) });
     }, false);
   }
