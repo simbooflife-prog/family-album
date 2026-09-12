@@ -9,7 +9,7 @@ Internal build id lives in `frame.html` as `FRAME_BUILD` (also in the HTML comme
 
 1. Edit in git (`main` on this repo). Commit + push.
 2. Copy changed files **only** to SOT: `/homeassistant/www/family-album`.
-3. Bump every Lovelace iframe `?v=` (Overview + digital-frame). Suggested next: match `FRAME_BUILD` (currently `20260912-ui7`).
+3. Bump every Lovelace iframe `?v=` (Overview + digital-frame). Suggested next: match `FRAME_BUILD` (currently `20260912-ui8`).
 4. Verify checksums (see below). If `/config/www/family-album` still exists, md5 **both** paths — they must match (symlink).
 5. Hard refresh the frame (tablet / companion app / browser).
 
@@ -51,7 +51,7 @@ HA and tablets cache `frame.html` hard. Changing `FRAME_BUILD` inside the file i
 
 - Overview iframe: bump `?v=`
 - digital-frame dashboard iframe: bump `?v=`
-- Example: `/local/family-album/frame.html?v=20260912-ui7`
+- Example: `/local/family-album/frame.html?v=20260912-ui8`
 
 ## Calendar webhooks (create + delete)
 
@@ -109,10 +109,30 @@ Same-origin from the frame iframe on HA:
 
 **Do not trust HTTP 200 alone:** after POST, the frame re-fetches `lists.json` with a short retry. Failures show in the Lists status line. Checked items sink to the bottom (strikethrough).
 
+
+## Meals webhooks (set + clear + upsert) — ui8
+
+Frame reads (defensive if 404/empty):
+
+| File | Role |
+| --- | --- |
+| `/local/family-album/recipes.json` | `{ recipes: [{ id, title, servings?, ingredients[], steps[], tags[] }] }` |
+| `/local/family-album/meal_plan.json` | `{ week_start, slots: [{ date, meal, recipe_id?, note? }] }` meal: `breakfast`\|`lunch`\|`dinner`\|`snack` |
+
+Same-origin from the frame iframe on HA:
+
+| Action | Method | Path | Body |
+| --- | --- | --- | --- |
+| Set slot | `POST` | `/api/webhook/fa_meal_set_ed7245130f9f42ae6b382bce` | `{ date, meal, recipe_id?, note? }` |
+| Clear slot | `POST` | `/api/webhook/fa_meal_clear_954da1e09d79efb43a4a8fa0` | `{ date, meal }` |
+| Upsert recipe | `POST` | `/api/webhook/fa_meal_upsert_f9f7faf0fe54feffff07b665` | `{ id?, title, servings?, ingredients?, steps?, tags? }` |
+
+**Do not trust HTTP 200 alone:** after POST, the frame re-fetches `meal_plan.json` / `recipes.json` with a short retry. Failures show in the Meals status line. Week grid always shows dinner; other meals appear when present in data. “Add ingredients to Grocery” is stubbed (no webhook yet).
+
 ## Hub bottom nav
 
 - **Overview mini** (no `?standby=1`): hub nav **hidden** — guests see photo frame only (family hub disguise; no house controls).
-- **Full digital-frame** (`?standby=1`): bottom tabs Home | Week | Tasks | Lists (+ muted soon: Meals, Board, Fun, Settings).
+- **Full digital-frame** (`?standby=1`): bottom tabs Home | Week | Tasks | Lists | Meals (+ muted soon: Board, Fun, Settings).
 
 ## Do not
 

@@ -1,0 +1,42 @@
+{
+  "recipes": [
+    {
+      "id": "r_weeknight_pasta",
+      "title": "Weeknight pasta",
+      "servings": 4,
+      "ingredients": [
+        "1 lb pasta",
+        "1 jar marinara",
+        "parmesan"
+      ],
+      "steps": [
+        "Boil pasta",
+        "Warm sauce",
+        "Toss and serve"
+      ],
+      "tags": [
+        "dinner",
+        "quick"
+      ]
+    },
+    {
+      "id": "r_taco_night",
+      "title": "Taco night",
+      "servings": 4,
+      "ingredients": [
+        "1 lb ground beef",
+        "taco shells",
+        "salsa",
+        "cheese"
+      ],
+      "steps": [
+        "Brown beef",
+        "Warm shells",
+        "Assemble tacos"
+      ],
+      "tags": [
+        "dinner"
+      ]
+    }
+  ]
+}
