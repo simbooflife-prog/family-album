@@ -1,0 +1,44 @@
+{
+  "motion": true,
+  "seconds": 16.0,
+  "zoom_pct": 6.0,
+  "focus_pct": 15.0,
+  "standby": {
+    "clock": true,
+    "slide_seconds": 10.0,
+    "shuffle": false,
+    "pause_on_tap": true,
+    "show_exit_hint": true,
+    "night_dim": false,
+    "night_dim_start": "22:00:00",
+    "night_dim_end": "07:00:00",
+    "night_dim_pct": 40.0
+  },
+  "calendar": {
+    "scale": 1.15,
+    "opacity": 1.0,
+    "show_month": true,
+    "show_dow": true,
+    "reset_seq": 0,
+    "updated": 1789219367
+  },
+  "clock": {
+    "scale": 1.0,
+    "opacity": 1.0,
+    "reset_seq": 0,
+    "updated": 1789219367
+  },
+  "slide_seconds": 10.0,
+  "shuffle": false,
+  "pause_on_tap": true,
+  "show_exit_hint": true,
+  "night_dim": false,
+  "night_dim_start": "22:00:00",
+  "night_dim_end": "07:00:00",
+  "night_dim_pct": 40.0,
+  "layout": {
+    "guides": true,
+    "updated": 1789219367
+  },
+  "guides": true
+}

@@ -1,0 +1,20 @@
+# Photo / media blobs — keep code and JSON templates in git
+photos/**/*.jpg
+photos/**/*.jpeg
+photos/**/*.png
+photos/**/*.heic
+*.jpg
+*.jpeg
+*.png
+*.heic
+*.JPG
+*.JPEG
+*.PNG
+*.HEIC
+!photos/.gitkeep
+
+# OS / editor junk
+.DS_Store
+Thumbs.db
+*.swp
+*~

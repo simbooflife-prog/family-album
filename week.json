@@ -1,0 +1,300 @@
+{
+  "timezone": "America/New_York",
+  "week_start": "2026-09-06",
+  "generated": "2026-09-12T12:20:00.321960-04:00",
+  "calendar_id": "66f073dac1e425814071e46d54f8f167bfbba00bcadcfa267bbbfe2184bc5aa1@group.calendar.google.com",
+  "calendar_name": "House",
+  "sync_method": "ha_calendar_get_events",
+  "account": "simbooflife@gmail.com",
+  "ha_entity": "calendar.house",
+  "ha_calendar_entities": [
+    "calendar.holidays_in_united_states",
+    "calendar.family",
+    "calendar.simbooflife_gmail_com",
+    "calendar.birthdays",
+    "calendar.house"
+  ],
+  "event_count": 0,
+  "days": [
+    {
+      "date": "2026-09-06",
+      "dow": "Sun",
+      "day": 6,
+      "events": []
+    },
+    {
+      "date": "2026-09-07",
+      "dow": "Mon",
+      "day": 7,
+      "events": []
+    },
+    {
+      "date": "2026-09-08",
+      "dow": "Tue",
+      "day": 8,
+      "events": []
+    },
+    {
+      "date": "2026-09-09",
+      "dow": "Wed",
+      "day": 9,
+      "events": []
+    },
+    {
+      "date": "2026-09-10",
+      "dow": "Thu",
+      "day": 10,
+      "events": []
+    },
+    {
+      "date": "2026-09-11",
+      "dow": "Fri",
+      "day": 11,
+      "events": []
+    },
+    {
+      "date": "2026-09-12",
+      "dow": "Sat",
+      "day": 12,
+      "events": []
+    }
+  ],
+  "weeks": [
+    {
+      "week_start": "2026-08-23",
+      "days": [
+        {
+          "date": "2026-08-23",
+          "dow": "Sun",
+          "day": 23,
+          "events": []
+        },
+        {
+          "date": "2026-08-24",
+          "dow": "Mon",
+          "day": 24,
+          "events": []
+        },
+        {
+          "date": "2026-08-25",
+          "dow": "Tue",
+          "day": 25,
+          "events": []
+        },
+        {
+          "date": "2026-08-26",
+          "dow": "Wed",
+          "day": 26,
+          "events": []
+        },
+        {
+          "date": "2026-08-27",
+          "dow": "Thu",
+          "day": 27,
+          "events": []
+        },
+        {
+          "date": "2026-08-28",
+          "dow": "Fri",
+          "day": 28,
+          "events": []
+        },
+        {
+          "date": "2026-08-29",
+          "dow": "Sat",
+          "day": 29,
+          "events": []
+        }
+      ]
+    },
+    {
+      "week_start": "2026-08-30",
+      "days": [
+        {
+          "date": "2026-08-30",
+          "dow": "Sun",
+          "day": 30,
+          "events": []
+        },
+        {
+          "date": "2026-08-31",
+          "dow": "Mon",
+          "day": 31,
+          "events": []
+        },
+        {
+          "date": "2026-09-01",
+          "dow": "Tue",
+          "day": 1,
+          "events": []
+        },
+        {
+          "date": "2026-09-02",
+          "dow": "Wed",
+          "day": 2,
+          "events": []
+        },
+        {
+          "date": "2026-09-03",
+          "dow": "Thu",
+          "day": 3,
+          "events": []
+        },
+        {
+          "date": "2026-09-04",
+          "dow": "Fri",
+          "day": 4,
+          "events": []
+        },
+        {
+          "date": "2026-09-05",
+          "dow": "Sat",
+          "day": 5,
+          "events": []
+        }
+      ]
+    },
+    {
+      "week_start": "2026-09-06",
+      "days": [
+        {
+          "date": "2026-09-06",
+          "dow": "Sun",
+          "day": 6,
+          "events": []
+        },
+        {
+          "date": "2026-09-07",
+          "dow": "Mon",
+          "day": 7,
+          "events": []
+        },
+        {
+          "date": "2026-09-08",
+          "dow": "Tue",
+          "day": 8,
+          "events": []
+        },
+        {
+          "date": "2026-09-09",
+          "dow": "Wed",
+          "day": 9,
+          "events": []
+        },
+        {
+          "date": "2026-09-10",
+          "dow": "Thu",
+          "day": 10,
+          "events": []
+        },
+        {
+          "date": "2026-09-11",
+          "dow": "Fri",
+          "day": 11,
+          "events": []
+        },
+        {
+          "date": "2026-09-12",
+          "dow": "Sat",
+          "day": 12,
+          "events": []
+        }
+      ]
+    },
+    {
+      "week_start": "2026-09-13",
+      "days": [
+        {
+          "date": "2026-09-13",
+          "dow": "Sun",
+          "day": 13,
+          "events": []
+        },
+        {
+          "date": "2026-09-14",
+          "dow": "Mon",
+          "day": 14,
+          "events": []
+        },
+        {
+          "date": "2026-09-15",
+          "dow": "Tue",
+          "day": 15,
+          "events": []
+        },
+        {
+          "date": "2026-09-16",
+          "dow": "Wed",
+          "day": 16,
+          "events": []
+        },
+        {
+          "date": "2026-09-17",
+          "dow": "Thu",
+          "day": 17,
+          "events": []
+        },
+        {
+          "date": "2026-09-18",
+          "dow": "Fri",
+          "day": 18,
+          "events": []
+        },
+        {
+          "date": "2026-09-19",
+          "dow": "Sat",
+          "day": 19,
+          "events": []
+        }
+      ]
+    },
+    {
+      "week_start": "2026-09-20",
+      "days": [
+        {
+          "date": "2026-09-20",
+          "dow": "Sun",
+          "day": 20,
+          "events": []
+        },
+        {
+          "date": "2026-09-21",
+          "dow": "Mon",
+          "day": 21,
+          "events": []
+        },
+        {
+          "date": "2026-09-22",
+          "dow": "Tue",
+          "day": 22,
+          "events": []
+        },
+        {
+          "date": "2026-09-23",
+          "dow": "Wed",
+          "day": 23,
+          "events": []
+        },
+        {
+          "date": "2026-09-24",
+          "dow": "Thu",
+          "day": 24,
+          "events": []
+        },
+        {
+          "date": "2026-09-25",
+          "dow": "Fri",
+          "day": 25,
+          "events": []
+        },
+        {
+          "date": "2026-09-26",
+          "dow": "Sat",
+          "day": 26,
+          "events": []
+        }
+      ]
+    }
+  ],
+  "setup_note": null
+}

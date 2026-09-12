@@ -1,0 +1,11 @@
+{
+  "clock": true,
+  "slide_seconds": 10.0,
+  "shuffle": false,
+  "pause_on_tap": true,
+  "show_exit_hint": true,
+  "night_dim": false,
+  "night_dim_start": "22:00:00",
+  "night_dim_end": "07:00:00",
+  "night_dim_pct": 40.0
+}
