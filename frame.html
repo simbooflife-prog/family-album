@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black"/>
 <title>Family Album Frame</title>
-<!-- frame FRAME_BUILD=20260912-ui3fix1 v=20260912-ui3fix1 (bump Lovelace ?v= on HA deploy) square-stage 1:1 photo-only-zoom hud-fixed gesture-lock layout-guides-edit-only snap-align hud-clock no-pill drag-clock calweather-combined swipe-weeks add-event delete-event week.json forecast.json preserve-add-modal-input overview-layout-lock gear-edit-mode save-touch-fix -->
+<!-- frame FRAME_BUILD=20260912-ui5 v=20260912-ui5 (bump Lovelace ?v= on HA deploy) square-stage 1:1 photo-only-zoom hud-fixed gesture-lock layout-guides-edit-only snap-align hud-clock no-pill drag-clock calweather-combined swipe-weeks add-event delete-event week.json forecast.json preserve-add-modal-input overview-layout-lock gear-edit-mode save-touch-fix tasks-tab-shell hub-bottom-nav -->
 <style>
   html,body{margin:0;height:100%;background:#0a1220;overflow:hidden;touch-action:manipulation;-webkit-user-select:none;user-select:none}
   html.standby-page,html.standby-page body{background:#000}
@@ -1022,6 +1022,130 @@
     #sb-calweather .cw-day{padding:0 4px}
   }
 
+
+  /* ---- Family hub bottom nav (full digital-frame only; never Overview mini) ---- */
+  #fa-hub-nav{
+    position:fixed;left:0;right:0;bottom:0;z-index:2147483000;
+    display:none;align-items:stretch;justify-content:space-around;
+    gap:2px;padding:6px 6px max(8px,env(safe-area-inset-bottom));
+    background:rgba(8,12,20,.82);
+    border-top:1px solid rgba(255,255,255,.14);
+    backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+    box-shadow:0 -6px 24px rgba(0,0,0,.35);
+    pointer-events:auto;touch-action:manipulation;
+    -webkit-tap-highlight-color:transparent;
+  }
+  html.full-frame.standby-on #fa-hub-nav{display:flex}
+  html.overview-mini #fa-hub-nav{display:none!important}
+  #fa-hub-nav .fa-tab{
+    flex:1 1 0;min-width:0;max-width:92px;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:2px;padding:6px 2px 4px;margin:0;border:0;border-radius:12px;
+    background:transparent;color:rgba(255,255,255,.55);
+    font:700 10px/1.1 -apple-system,BlinkMacSystemFont,sans-serif;
+    letter-spacing:.02em;cursor:pointer;
+  }
+  #fa-hub-nav .fa-tab .ico{font-size:18px;line-height:1;opacity:.9}
+  #fa-hub-nav .fa-tab.on{
+    color:#fff;background:rgba(80,160,255,.28);
+    box-shadow:0 0 0 1px rgba(120,180,255,.35);
+  }
+  #fa-hub-nav .fa-tab.soon{
+    opacity:.38;cursor:default;pointer-events:none;
+  }
+  #fa-hub-nav .fa-tab.soon .soon-tag{
+    font:600 8px/1 -apple-system,sans-serif;opacity:.8;letter-spacing:.04em;text-transform:uppercase;
+  }
+
+  /* ---- Tasks panel ---- */
+  #fa-tasks{
+    position:fixed;inset:0;z-index:2147482900;
+    display:none;flex-direction:column;
+    padding:max(12px,env(safe-area-inset-top)) 14px calc(72px + env(safe-area-inset-bottom)) 14px;
+    box-sizing:border-box;
+    background:rgba(6,10,18,.88);
+    backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+    color:#fff;pointer-events:auto;touch-action:manipulation;
+    -webkit-user-select:none;user-select:none;
+  }
+  html.hub-tab-tasks #fa-tasks{display:flex}
+  html.overview-mini #fa-tasks{display:none!important}
+  #fa-tasks .fa-tasks-head{
+    display:flex;align-items:baseline;justify-content:space-between;gap:12px;
+    margin:0 0 10px;flex:0 0 auto;
+  }
+  #fa-tasks .fa-tasks-head h2{
+    margin:0;font:800 22px/1.15 -apple-system,sans-serif;letter-spacing:.02em;
+  }
+  #fa-tasks .fa-tasks-sub{
+    margin:0;font:600 12px/1.2 -apple-system,sans-serif;opacity:.65;
+  }
+  #fa-tasks .fa-tasks-status{
+    min-height:18px;margin:0 0 8px;font:600 12px/1.3 -apple-system,sans-serif;
+    color:rgba(180,210,255,.9);
+  }
+  #fa-tasks .fa-tasks-scroll{
+    flex:1 1 auto;min-height:0;overflow:auto;-webkit-overflow-scrolling:touch;
+    padding-bottom:8px;
+  }
+  #fa-tasks .fa-sec{
+    margin:14px 0 8px;font:800 13px/1.2 -apple-system,sans-serif;
+    letter-spacing:.06em;text-transform:uppercase;opacity:.7;
+  }
+  #fa-tasks .fa-sec:first-child{margin-top:2px}
+  #fa-tasks .fa-task{
+    display:flex;align-items:center;gap:12px;
+    padding:12px 12px;margin:0 0 8px;border-radius:14px;
+    background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);
+  }
+  #fa-tasks .fa-task.done{opacity:.55}
+  #fa-tasks .fa-task.done .fa-task-title{text-decoration:line-through;opacity:.85}
+  #fa-tasks .fa-check{
+    flex:0 0 auto;width:44px;height:44px;border-radius:22px;border:2px solid rgba(255,255,255,.45);
+    background:rgba(0,0,0,.25);color:#fff;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+    font:800 20px/1 sans-serif;padding:0;
+    -webkit-tap-highlight-color:transparent;
+  }
+  #fa-tasks .fa-check:active{transform:scale(.94)}
+  #fa-tasks .fa-check.on{
+    background:rgba(76,175,80,.85);border-color:rgba(129,199,132,.95);
+  }
+  #fa-tasks .fa-task-main{flex:1 1 auto;min-width:0}
+  #fa-tasks .fa-task-title{
+    font:700 16px/1.25 -apple-system,sans-serif;margin:0 0 4px;
+    display:flex;align-items:center;gap:6px;
+  }
+  #fa-tasks .fa-task-meta{
+    display:flex;flex-wrap:wrap;align-items:center;gap:6px;
+    font:600 12px/1.2 -apple-system,sans-serif;opacity:.75;
+  }
+  #fa-tasks .fa-chip{
+    display:inline-flex;align-items:center;gap:4px;
+    padding:2px 8px;border-radius:999px;
+    background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.12);
+  }
+  #fa-tasks .fa-assignee{
+    display:inline-flex;align-items:center;gap:5px;
+    padding:2px 8px 2px 4px;border-radius:999px;
+    background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);
+  }
+  #fa-tasks .fa-dot{
+    width:10px;height:10px;border-radius:50%;flex:0 0 auto;
+    box-shadow:0 0 0 1px rgba(0,0,0,.25);
+  }
+  #fa-tasks .fa-stars{opacity:.9}
+  #fa-tasks .fa-empty{
+    margin:28px 12px;text-align:center;opacity:.72;
+    font:600 15px/1.45 -apple-system,sans-serif;
+  }
+  #fa-tasks .fa-empty .big{font-size:36px;line-height:1.2;margin-bottom:8px}
+  html.hub-tab-tasks #sb-calweather,
+  html.hub-tab-tasks #sb-week,
+  html.hub-tab-tasks #sb-forecast,
+  html.hub-tab-tasks #sb-clock{opacity:.18;pointer-events:none}
+  html.hub-tab-week #sb-calweather{box-shadow:0 0 0 2px rgba(120,180,255,.55),0 8px 28px rgba(0,0,0,.35)}
+
 </style>
 </head>
 <body>
@@ -1153,9 +1277,30 @@
   </div>
 </div>
 
+
+<!-- Family hub bottom nav: full digital-frame only (hidden on Overview mini) -->
+<nav id="fa-hub-nav" aria-label="Family hub" hidden>
+  <button type="button" class="fa-tab on" data-tab="home" aria-current="page"><span class="ico" aria-hidden="true">🏠</span><span>Home</span></button>
+  <button type="button" class="fa-tab" data-tab="week"><span class="ico" aria-hidden="true">📅</span><span>Week</span></button>
+  <button type="button" class="fa-tab" data-tab="tasks"><span class="ico" aria-hidden="true">✅</span><span>Tasks</span></button>
+  <button type="button" class="fa-tab soon" data-tab="lists" disabled aria-disabled="true"><span class="ico" aria-hidden="true">🧾</span><span>Lists</span><span class="soon-tag">soon</span></button>
+  <button type="button" class="fa-tab soon" data-tab="meals" disabled aria-disabled="true"><span class="ico" aria-hidden="true">🍽️</span><span>Meals</span><span class="soon-tag">soon</span></button>
+  <button type="button" class="fa-tab soon" data-tab="board" disabled aria-disabled="true"><span class="ico" aria-hidden="true">📌</span><span>Board</span><span class="soon-tag">soon</span></button>
+  <button type="button" class="fa-tab soon" data-tab="fun" disabled aria-disabled="true"><span class="ico" aria-hidden="true">🎮</span><span>Fun</span><span class="soon-tag">soon</span></button>
+  <button type="button" class="fa-tab soon" data-tab="settings" disabled aria-disabled="true"><span class="ico" aria-hidden="true">···</span><span>Settings</span><span class="soon-tag">soon</span></button>
+</nav>
+<div id="fa-tasks" aria-hidden="true">
+  <div class="fa-tasks-head">
+    <h2>Tasks</h2>
+    <p class="fa-tasks-sub" id="fa-tasks-date"></p>
+  </div>
+  <div class="fa-tasks-status" id="fa-tasks-status" role="status" aria-live="polite"></div>
+  <div class="fa-tasks-scroll" id="fa-tasks-list"></div>
+</div>
+
 <script>
 /* Identifiable deploy build — bump Lovelace iframe ?v= separately on HA. */
-const FRAME_BUILD = '20260912-ui3fix1';
+const FRAME_BUILD = '20260912-ui5';
 try { window.FRAME_BUILD = FRAME_BUILD; } catch (e) {}
 const FALLBACK = [
   "/local/family-album/filler_forest.jpg",
@@ -2820,7 +2965,7 @@ function bindHoldDrag(el, storageKey, kind){
 
   const onDown = (ev) => {
     if (typeof hudLayoutEditAllowed === 'function' && !hudLayoutEditAllowed()) return;
-    if (ev.target && ev.target.closest && (ev.target.closest('#sb-exit') || ev.target.closest('#sb-fs') || ev.target.closest('#sb-fit') || ev.target.closest('#sb-hud-gear'))) return;
+    if (ev.target && ev.target.closest && (ev.target.closest('#sb-exit') || ev.target.closest('#sb-fs') || ev.target.closest('#sb-fit') || ev.target.closest('#sb-hud-gear') || ev.target.closest('#fa-hub-nav') || ev.target.closest('#fa-tasks'))) return;
     // Cal+weather: swipe on day strip / form / + — do not hold-drag the whole card (header/now still drags).
     if (kind === 'calwx' && ev.target && ev.target.closest &&
         ev.target.closest('.cw-days, .cw-day, .cw-evs, .cw-ev, .cw-form, .cw-add, .cw-hint, input, button.cw-add, .cw-toolbar, #cw-add-modal, .cw-add-sheet, #cw-del-modal, .cw-del-sheet')) {
@@ -3182,6 +3327,357 @@ let _weekCache = null;
 const CAL_EVENT_WEBHOOK = 'fa_cal_evt_7c3a91e2b4d06f18a9e55c21';
 const CAL_DELETE_WEBHOOK = 'fa_cal_del_7c3a91e2b4d06f18a9e55c21';
 const HOUSE_CAL_ID = '66f073dac1e425814071e46d54f8f167bfbba00bcadcfa267bbbfe2184bc5aa1@group.calendar.google.com';
+
+
+/* ---- Family hub tabs + Tasks (profiles/tasks/rewards JSON; family hub only) ---- */
+const TASK_COMPLETE_WEBHOOK = null; // HA: set to webhook id string when ready, e.g. 'fa_task_complete_…'
+const HUB_TABS_ACTIVE = { home:1, week:1, tasks:1 };
+let hubTab = 'home';
+const TASKS_STATE = {
+  profiles: [],
+  tasks: [],
+  completions: [],
+  rewards: [],
+  optimistic: {}, // task_id|profile_id|date -> 'done'
+  statusMsg: '',
+  loaded: false,
+  loadError: ''
+};
+
+function todayISO(){
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const day = String(d.getDate()).padStart(2,'0');
+  return y + '-' + m + '-' + day;
+}
+
+function setStandbyOnClass(on){
+  try { document.documentElement.classList.toggle('standby-on', !!on); } catch (e) {}
+  syncHubNavVisibility();
+}
+
+function syncHubNavVisibility(){
+  const nav = document.getElementById('fa-hub-nav');
+  if (!nav) return;
+  const show = !!(IS_FULL_FRAME && typeof standbyOn !== 'undefined' && standbyOn);
+  nav.hidden = !show;
+  if (show) nav.removeAttribute('hidden');
+  else nav.setAttribute('hidden','');
+  try {
+    document.documentElement.classList.toggle('standby-on', !!(typeof standbyOn !== 'undefined' && standbyOn));
+  } catch (e) {}
+}
+
+function setHubTab(tab){
+  if (!HUB_TABS_ACTIVE[tab]) return;
+  hubTab = tab;
+  try {
+    document.documentElement.classList.remove('hub-tab-home','hub-tab-week','hub-tab-tasks');
+    document.documentElement.classList.add('hub-tab-' + tab);
+  } catch (e) {}
+  const nav = document.getElementById('fa-hub-nav');
+  if (nav) {
+    nav.querySelectorAll('.fa-tab[data-tab]').forEach(function(btn){
+      const t = btn.getAttribute('data-tab');
+      const on = t === tab;
+      btn.classList.toggle('on', on);
+      if (on) btn.setAttribute('aria-current','page');
+      else btn.removeAttribute('aria-current');
+    });
+  }
+  const panel = document.getElementById('fa-tasks');
+  if (panel) {
+    const show = tab === 'tasks' && IS_FULL_FRAME;
+    panel.setAttribute('aria-hidden', show ? 'false' : 'true');
+  }
+  if (tab === 'tasks') {
+    try { renderTasksPanel(); } catch (e) {}
+    try { loadTasksData(); } catch (e) {}
+  }
+  syncHubNavVisibility();
+}
+
+function bindHubNavOnce(){
+  const nav = document.getElementById('fa-hub-nav');
+  if (!nav || nav._bound) return;
+  nav._bound = true;
+  nav.addEventListener('click', function(ev){
+    const btn = ev.target && ev.target.closest ? ev.target.closest('.fa-tab[data-tab]') : null;
+    if (!btn || btn.disabled || btn.classList.contains('soon')) return;
+    const tab = btn.getAttribute('data-tab');
+    if (!tab || !HUB_TABS_ACTIVE[tab]) return;
+    try { ev.preventDefault(); ev.stopPropagation(); } catch (e) {}
+    setHubTab(tab);
+  }, true);
+  // default tab
+  setHubTab(IS_FULL_FRAME ? 'home' : 'home');
+}
+
+async function fetchFaJson(name){
+  try {
+    const r = await fetch('/local/family-album/' + name + '?v=' + Date.now(), {cache:'no-store'});
+    if (!r.ok) return { ok:false, status:r.status, data:null };
+    const textBody = await r.text();
+    if (!textBody || !String(textBody).trim()) return { ok:true, status:r.status, data:null, empty:true };
+    try {
+      return { ok:true, status:r.status, data: JSON.parse(textBody) };
+    } catch (e) {
+      return { ok:false, status:r.status, data:null, parseError:true };
+    }
+  } catch (e) {
+    return { ok:false, status:0, data:null, network:true };
+  }
+}
+
+function normalizeProfiles(data){
+  const list = (data && Array.isArray(data.profiles)) ? data.profiles : [];
+  return list.filter(function(p){ return p && p.id; }).map(function(p){
+    return {
+      id: String(p.id),
+      name: String(p.name || p.id),
+      color: String(p.color || '#90CAF9'),
+      stars: Number(p.stars)||0,
+      role: (function(r){ r=String(r||'').toLowerCase(); return (r==='parent'||r==='adult'||r==='child')?r:''; })(p.role)
+    };
+  });
+}
+function normalizeTasks(data){
+  const list = (data && Array.isArray(data.tasks)) ? data.tasks : [];
+  return list.filter(function(t){ return t && t.id; }).map(function(t){
+    return {
+      id: String(t.id),
+      kind: (t.kind === 'routine' || t.kind === 'chore') ? t.kind : 'chore',
+      title: String(t.title || 'Task'),
+      emoji: String(t.emoji || ''),
+      assignees: Array.isArray(t.assignees) ? t.assignees.map(String) : [],
+      dayparts: Array.isArray(t.dayparts) ? t.dayparts.map(String) : [],
+      repeat: t.repeat,
+      stars: Number(t.stars)||0,
+      up_for_grabs: !!t.up_for_grabs,
+      due: t.due ? String(t.due).slice(0,10) : ''
+    };
+  });
+}
+function normalizeCompletions(data){
+  const list = (data && Array.isArray(data.completions)) ? data.completions : [];
+  return list.filter(function(c){ return c && c.task_id; }).map(function(c){
+    return {
+      task_id: String(c.task_id),
+      profile_id: String(c.profile_id || ''),
+      date: String(c.date || '').slice(0,10),
+      status: (c.status === 'skipped') ? 'skipped' : 'done'
+    };
+  });
+}
+function normalizeRewards(data){
+  const list = (data && Array.isArray(data.rewards)) ? data.rewards : [];
+  return list.filter(function(r){ return r && r.id; }).map(function(r){
+    return {
+      id: String(r.id),
+      title: String(r.title || 'Reward'),
+      emoji: String(r.emoji || ''),
+      cost_stars: Number(r.cost_stars)||0,
+      profiles: Array.isArray(r.profiles) ? r.profiles.map(String) : [],
+      renew: !!r.renew
+    };
+  });
+}
+
+function profileById(id){
+  for (let i=0;i<TASKS_STATE.profiles.length;i++){
+    if (TASKS_STATE.profiles[i].id === id) return TASKS_STATE.profiles[i];
+  }
+  return null;
+}
+
+function completionKey(taskId, profileId, date){
+  return String(taskId) + '|' + String(profileId||'') + '|' + String(date||'');
+}
+
+function isTaskDone(task, profileId, date){
+  date = date || todayISO();
+  const key = completionKey(task.id, profileId, date);
+  if (TASKS_STATE.optimistic[key] === 'done') return true;
+  return TASKS_STATE.completions.some(function(c){
+    return c.task_id === task.id && c.status === 'done' && c.date === date &&
+      (!profileId || !c.profile_id || c.profile_id === profileId);
+  });
+}
+
+function setTasksStatus(msg){
+  TASKS_STATE.statusMsg = msg || '';
+  const el = document.getElementById('fa-tasks-status');
+  if (el) el.textContent = TASKS_STATE.statusMsg;
+}
+
+async function loadTasksData(){
+  const [pr, tk, rw] = await Promise.all([
+    fetchFaJson('profiles.json'),
+    fetchFaJson('tasks.json'),
+    fetchFaJson('rewards.json')
+  ]);
+  TASKS_STATE.profiles = normalizeProfiles(pr.data);
+  TASKS_STATE.tasks = normalizeTasks(tk.data);
+  TASKS_STATE.completions = normalizeCompletions(tk.data);
+  TASKS_STATE.rewards = normalizeRewards(rw.data);
+  TASKS_STATE.loaded = true;
+  const missing = [];
+  if (!pr.ok || pr.empty) missing.push('profiles');
+  if (!tk.ok || tk.empty) missing.push('tasks');
+  if (!rw.ok || rw.empty) missing.push('rewards');
+  if (missing.length && !TASKS_STATE.tasks.length) {
+    TASKS_STATE.loadError = 'Waiting on HA seed (' + missing.join(', ') + ')';
+  } else {
+    TASKS_STATE.loadError = '';
+  }
+  if (hubTab === 'tasks') renderTasksPanel();
+}
+
+function renderAssigneeChips(ids){
+  if (!ids || !ids.length) return '';
+  return ids.map(function(id){
+    const p = profileById(id);
+    const name = p ? p.name : id;
+    const color = p ? p.color : '#90CAF9';
+    return '<span class="fa-assignee"><span class="fa-dot" style="background:' + color.replace(/"/g,'') + '"></span>' +
+      escapeHtml(name) + '</span>';
+  }).join('');
+}
+
+function escapeHtml(s){
+  return String(s||'').replace(/[&<>"']/g, function(c){
+    return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]);
+  });
+}
+
+function renderTaskRow(task, opts){
+  opts = opts || {};
+  const date = todayISO();
+  const primaryAssignee = (task.assignees && task.assignees[0]) || '';
+  const done = isTaskDone(task, primaryAssignee, date);
+  const kindLabel = task.kind === 'routine' ? 'Routine' : 'Chore';
+  const daypart = (task.dayparts && task.dayparts.length) ? task.dayparts.join(' · ') : '';
+  const stars = task.stars ? ('⭐ ' + task.stars) : '';
+  const due = task.due ? ('Due ' + task.due) : '';
+  const emoji = task.emoji ? ('<span aria-hidden="true">' + escapeHtml(task.emoji) + '</span> ') : '';
+  const assigneesHtml = task.up_for_grabs && !(task.assignees && task.assignees.length)
+    ? '<span class="fa-chip">Up for grabs</span>'
+    : renderAssigneeChips(task.assignees);
+  return '<div class="fa-task' + (done ? ' done' : '') + '" data-task-id="' + escapeHtml(task.id) + '">' +
+    '<button type="button" class="fa-check' + (done ? ' on' : '') + '" data-task-check="' + escapeHtml(task.id) + '"' +
+    ' data-profile="' + escapeHtml(primaryAssignee) + '" aria-label="' + (done ? 'Completed' : 'Mark done') + '">' +
+    (done ? '✓' : '') + '</button>' +
+    '<div class="fa-task-main">' +
+      '<div class="fa-task-title">' + emoji + escapeHtml(task.title) + '</div>' +
+      '<div class="fa-task-meta">' +
+        '<span class="fa-chip">' + escapeHtml(kindLabel) + '</span>' +
+        (daypart ? '<span class="fa-chip">' + escapeHtml(daypart) + '</span>' : '') +
+        (due ? '<span class="fa-chip">' + escapeHtml(due) + '</span>' : '') +
+        (stars ? '<span class="fa-stars">' + escapeHtml(stars) + '</span>' : '') +
+        assigneesHtml +
+      '</div>' +
+    '</div></div>';
+}
+
+function renderTasksPanel(){
+  const list = document.getElementById('fa-tasks-list');
+  const dateEl = document.getElementById('fa-tasks-date');
+  if (dateEl) {
+    try {
+      dateEl.textContent = new Date().toLocaleDateString(undefined, {weekday:'short', month:'short', day:'numeric'});
+    } catch (e) { dateEl.textContent = todayISO(); }
+  }
+  if (!list) return;
+  if (TASKS_STATE.loadError && !TASKS_STATE.tasks.length) {
+    setTasksStatus(TASKS_STATE.loadError);
+  } else if (!TASK_COMPLETE_WEBHOOK) {
+    setTasksStatus('HA sync coming — check-off is local until webhook exists');
+  } else {
+    setTasksStatus(TASKS_STATE.statusMsg || '');
+  }
+  const assigned = TASKS_STATE.tasks.filter(function(t){ return !t.up_for_grabs || (t.assignees && t.assignees.length); });
+  const grabs = TASKS_STATE.tasks.filter(function(t){ return t.up_for_grabs && !(t.assignees && t.assignees.length); });
+  // Also include up_for_grabs with assignees in assigned; grabs section for pure grabs
+  // Research: Up for Grabs = unassigned. Show assigned chores/routines + grabs section.
+  const routines = assigned.filter(function(t){ return t.kind === 'routine'; });
+  const chores = assigned.filter(function(t){ return t.kind !== 'routine'; });
+
+  if (!TASKS_STATE.tasks.length) {
+    list.innerHTML = '<div class="fa-empty"><div class="big" aria-hidden="true">✅</div>' +
+      'No chores or routines yet.<br/>HA can seed <code>tasks.json</code> anytime.</div>';
+    return;
+  }
+  let html = '';
+  if (routines.length) {
+    html += '<div class="fa-sec">Routines</div>';
+    routines.forEach(function(t){ html += renderTaskRow(t); });
+  }
+  if (chores.length) {
+    html += '<div class="fa-sec">Chores</div>';
+    chores.forEach(function(t){ html += renderTaskRow(t); });
+  }
+  if (grabs.length) {
+    html += '<div class="fa-sec">Up for Grabs</div>';
+    grabs.forEach(function(t){ html += renderTaskRow(t); });
+  }
+  list.innerHTML = html || '<div class="fa-empty">Nothing due today.</div>';
+}
+
+async function completeTask(taskId, profileId){
+  const date = todayISO();
+  const key = completionKey(taskId, profileId, date);
+  TASKS_STATE.optimistic[key] = 'done';
+  renderTasksPanel();
+
+  if (!TASK_COMPLETE_WEBHOOK) {
+    setTasksStatus('HA sync coming');
+    return;
+  }
+  try {
+    const body = {
+      task_id: taskId,
+      profile_id: profileId || '',
+      date: date,
+      status: 'done'
+    };
+    const r = await fetch('/api/webhook/' + TASK_COMPLETE_WEBHOOK, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(body)
+    });
+    if (!r.ok) {
+      setTasksStatus('HA sync failed (HTTP ' + r.status + ') — local check kept');
+      return;
+    }
+    setTasksStatus('Synced to HA');
+    // refresh from JSON shortly
+    setTimeout(function(){ loadTasksData(); }, 1200);
+  } catch (e) {
+    setTasksStatus('HA sync coming');
+  }
+}
+
+function bindTasksPanelOnce(){
+  const list = document.getElementById('fa-tasks-list');
+  if (!list || list._bound) return;
+  list._bound = true;
+  list.addEventListener('click', function(ev){
+    const btn = ev.target && ev.target.closest ? ev.target.closest('[data-task-check]') : null;
+    if (!btn) return;
+    try { ev.preventDefault(); ev.stopPropagation(); } catch (e) {}
+    const id = btn.getAttribute('data-task-check');
+    const profile = btn.getAttribute('data-profile') || '';
+    if (!id) return;
+    if (btn.classList.contains('on')) {
+      // MVP: no un-complete path without webhook; keep done
+      setTasksStatus(TASK_COMPLETE_WEBHOOK ? 'Already done' : 'HA sync coming');
+      return;
+    }
+    completeTask(id, profile);
+  }, true);
+}
+
 
 function ensureCalwxHandles(el){
   if (!el) return null;
@@ -3912,7 +4408,9 @@ async function submitCalwxEvent(title, date, time){
     date: String(date||'').slice(0,10),
     time: String(time||'').trim(),
     duration_minutes: 60,
-    calendar_id: HOUSE_CAL_ID
+    // Entity id preferred; create script accepts either and always forces calendar.house
+    calendar_id: 'calendar.house',
+    calendar_google_id: HOUSE_CAL_ID
   };
   if (!body.title || body.date.length !== 10) return {ok:false, error:'need_title_date'};
   let httpErr = '';
@@ -4708,7 +5206,7 @@ function exitFullscreen(){
 
 function standbyStandaloneUrl(){
   // Intentionally unused: no popup / external standby navigation.
-  return '/local/family-album/frame.html?standby=1&v=20260912-ui3fix1';
+  return '/local/family-album/frame.html?standby=1&v=20260912-ui5';
 }
 
 function openStandaloneStandby(){
@@ -4757,6 +5255,7 @@ async function enterStandby(opts){
   try {
     standbyOn = true;
     paused = false;
+    try { setStandbyOnClass(true); syncHubNavVisibility(); } catch (e) {}
     document.getElementById('sb-pause').classList.remove('on');
     showStandbyUi();
     try { placeHud(); updateClock(); } catch (e) {}
@@ -4787,6 +5286,7 @@ function leaveStandby(opts){
   leavingStandby = true;
   exitGuardUntil = Date.now() + 1200;
   standbyOn = false;
+  try { setStandbyOnClass(false); setHubTab('home'); syncHubNavVisibility(); } catch (e) {}
   paused = false;
   enteringStandby = false;
   uzReset({resumeKb:false});
@@ -4995,7 +5495,7 @@ box.addEventListener('touchstart', (e) => {
   if (!standbyOn) return;
   // Ignore if Exit / FS / Fit control
   const tgt = e.target;
-  if (tgt && (tgt.id === 'sb-exit' || tgt.id === 'sb-fs' || tgt.id === 'sb-fit' || tgt.id === 'sb-hud-gear' || (tgt.closest && tgt.closest('#sb-exit,#sb-fs,#sb-fit,#sb-hud-gear')))) return;
+  if (tgt && (tgt.id === 'sb-exit' || tgt.id === 'sb-fs' || tgt.id === 'sb-fit' || tgt.id === 'sb-hud-gear' || (tgt.closest && tgt.closest('#sb-exit,#sb-fs,#sb-fit,#sb-hud-gear,#fa-hub-nav,#fa-tasks,#cw-add-modal,#cw-del-modal')))) return;
 
   if (e.touches.length >= 2) {
     if (shouldPhotoPinch(e)) {
@@ -5050,7 +5550,7 @@ document.addEventListener('touchstart', (e) => {
   if (!standbyOn) return;
   if (!e.touches || e.touches.length < 2) return;
   const tgt = e.target;
-  if (tgt && tgt.closest && tgt.closest('#sb-exit,#sb-fs,#sb-fit,#sb-hud-gear')) return;
+  if (tgt && tgt.closest && tgt.closest('#sb-exit,#sb-fs,#sb-fit,#sb-hud-gear,#fa-hub-nav,#fa-tasks,#cw-add-modal,#cw-del-modal')) return;
   if (touchOnResizeHandle(e)) return;
   if (!shouldPhotoPinch(e)) return;
   uzOnPinchStart(e);

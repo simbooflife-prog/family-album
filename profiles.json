@@ -1,0 +1,5 @@
+{
+  "profiles": [
+    { "id": "p_haya", "name": "Haya", "color": "#7C5CFF", "stars": 0, "role": "parent" }
+  ]
+}

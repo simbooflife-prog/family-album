@@ -9,7 +9,7 @@ Internal build id lives in `frame.html` as `FRAME_BUILD` (also in the HTML comme
 
 1. Edit in git (`main` on this repo). Commit + push.
 2. Copy changed files **only** to SOT: `/homeassistant/www/family-album`.
-3. Bump every Lovelace iframe `?v=` (Overview + digital-frame). Suggested next: match `FRAME_BUILD` (currently `20260912-ui4`).
+3. Bump every Lovelace iframe `?v=` (Overview + digital-frame). Suggested next: match `FRAME_BUILD` (currently `20260912-ui5`).
 4. Verify checksums (see below). If `/config/www/family-album` still exists, md5 **both** paths — they must match (symlink).
 5. Hard refresh the frame (tablet / companion app / browser).
 
@@ -51,7 +51,7 @@ HA and tablets cache `frame.html` hard. Changing `FRAME_BUILD` inside the file i
 
 - Overview iframe: bump `?v=`
 - digital-frame dashboard iframe: bump `?v=`
-- Example: `/local/family-album/frame.html?v=20260912-ui4`
+- Example: `/local/family-album/frame.html?v=20260912-ui5`
 
 ## Calendar webhooks (create + delete)
 
@@ -70,6 +70,28 @@ Same-origin from the frame iframe on HA:
 - **Overview mini** iframe (no `?standby=1`): overlays are **always locked** — no drag / move / resize. Gear hidden.
 - **Full digital-frame** (`?standby=1`, often with `?ha=1`): layout locked by default. Tap the **⚙** gear (top-left HUD) to enter edit mode; tap **Done** (or gear again) to re-lock.
 - Detection: `URLSearchParams` `standby=1` → full frame; absent/false → Overview mini.
+
+
+## Tasks webhooks (complete) — HA still needed
+
+Frame reads (defensive if 404/empty):
+
+| File | Role |
+| --- | --- |
+| `/local/family-album/profiles.json` | `{ profiles: [{ id, name, color, stars, role }] }` role: `parent`\|`adult`\|`child` |
+| `/local/family-album/tasks.json` | `{ tasks: [], completions: [] }` |
+| `/local/family-album/rewards.json` | `{ rewards: [] }` |
+
+**Write path:** frame keeps `TASK_COMPLETE_WEBHOOK = null` until HA provides an id. Do **not** invent a secret webhook id in the frame. When ready, set the constant to the webhook path id (same pattern as calendar) and accept:
+
+`POST /api/webhook/<id>` body `{ task_id, profile_id, date, status: "done"|"skipped" }` then update `tasks.json` completions (and optional stars).
+
+Until then, Tasks check-off is optimistic/local UI only and shows **HA sync coming**.
+
+## Hub bottom nav
+
+- **Overview mini** (no `?standby=1`): hub nav **hidden** — guests see photo frame only (family hub disguise; no house controls).
+- **Full digital-frame** (`?standby=1`): bottom tabs Home | Week | Tasks (+ muted soon: Lists, Meals, Board, Fun, Settings).
 
 ## Do not
 

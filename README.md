@@ -24,12 +24,12 @@ Live URL base:
 https://1loiy6aum6qt4x1pp4isn1o6fbott58q.ui.nabu.casa/local/family-album/
 ```
 
-Current in-file `FRAME_BUILD`: `20260912-ui4` (bump Lovelace `?v=` on HA to match on deploy).
+Current in-file `FRAME_BUILD`: `20260912-ui5` (bump Lovelace `?v=` on HA to match on deploy).
 
 Example:
 
 ```
-/local/family-album/frame.html?v=20260912-ui4
+/local/family-album/frame.html?v=20260912-ui5
 ```
 
 ## Symlink — do not treat as a second tree
@@ -67,6 +67,9 @@ Fetched from live Nabu Casa `/local/family-album/` on 2026-09-12 (no auth requir
 | `clock.json` | Clock overlay scale/opacity |
 | `motion.json` | Ken Burns / motion + nested standby/calendar/clock |
 | `standby.json` | Standby / night-dim settings |
+| `profiles.json` | Family profiles (colors, stars, role) |
+| `tasks.json` | Chores / routines + completions |
+| `rewards.json` | Star rewards catalog |
 
 `current.json`, standalone CSS/JS, and an HA-side README were **not** present (HTTP 404). CSS and JS live inside `frame.html`.
 
@@ -79,7 +82,7 @@ Family photos (`IMG_*.jpg`, `filler_*.jpg`, etc.) stay on HA under SOT and are g
 Build in this order:
 
 1. **Calendar** — week strip, add-event, delete-event (verified), swipe-weeks (in progress on the live frame)
-2. **Tasks**
+2. **Tasks** — tab shell + read-only JSON (ui5); write webhook TBD
 3. **Lists**
 4. **Meals + recipes**
 5. **Message board**
