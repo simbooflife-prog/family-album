@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black"/>
 <title>Family Album Frame</title>
-<!-- frame FRAME_BUILD=20260912-ui13 v=20260912-ui13 (bump Lovelace ?v= on HA deploy) square-stage 1:1 photo-only-zoom hud-fixed gesture-lock layout-guides-edit-only snap-align hud-clock no-pill drag-clock calweather-combined swipe-weeks add-event delete-event week.json forecast.json preserve-add-modal-input overview-layout-lock gear-edit-mode save-touch-fix tasks-tab-shell hub-bottom-nav tasks-webhooks-claim-complete profile-picker lists-tab lists-webhooks-add-toggle-clear meals-tab meals-webhooks-set-clear-upsert board-tab board-webhooks-add-delete-pin settings-tab settings-pin-sleep-idle settings-ia-researcher-order fun-tab-games fun-unlocked-gate games_state.json -->
+<!-- frame FRAME_BUILD=20261008-ui13-fill3 v=20261008-ui13-fill3 fill-param-overview fill-hud-layout reset-layout-seq (bump Lovelace ?v= on HA deploy) square-stage 1:1 photo-only-zoom hud-fixed gesture-lock layout-guides-edit-only snap-align hud-clock no-pill drag-clock calweather-combined swipe-weeks add-event delete-event week.json forecast.json preserve-add-modal-input overview-layout-lock gear-edit-mode save-touch-fix tasks-tab-shell hub-bottom-nav tasks-webhooks-claim-complete profile-picker lists-tab lists-webhooks-add-toggle-clear meals-tab meals-webhooks-set-clear-upsert board-tab board-webhooks-add-delete-pin settings-tab settings-pin-sleep-idle settings-ia-researcher-order fun-tab-games fun-unlocked-gate games_state.json -->
 <style>
   html,body{margin:0;height:100%;background:#0a1220;overflow:hidden;touch-action:manipulation;-webkit-user-select:none;user-select:none}
   html.standby-page,html.standby-page body{background:#000}
@@ -2005,6 +2005,55 @@
   html.overview-mini #fa-sleep-veil{display:none!important}
 
 
+  /* fill=1 (opt-in; Overview iframe only): photo covers the whole iframe edge to edge instead of the centered 1:1 square.
+     HUD follows #stage via visBox(). Standby / digital-frame (no fill param) unchanged. */
+  html.overview-mini.fa-fill #stage,
+  html.overview-mini.fa-fill #tap-enter,
+  html.overview-mini.fa-fill #night-veil{
+    width:100%;height:100%;aspect-ratio:auto;max-width:none;max-height:none;
+  }
+  /* fill=1 HUD layout (fill2): week strip = compact band, bottom-left ~60%; clock/date = right column, bottom-aligned.
+     Sizes follow the iframe viewport (vw/vh) so nothing collides at 684x260 or narrower. Non-fill untouched. */
+  html.overview-mini.fa-fill #mini-hint{display:none!important}
+  html.overview-mini.fa-fill #stage::after{
+    content:"";position:absolute;left:0;right:0;bottom:0;height:62%;z-index:1;pointer-events:none;
+    background:linear-gradient(to top,rgba(0,0,0,.52) 0%,rgba(0,0,0,.22) 55%,rgba(0,0,0,0) 100%);
+  }
+  html.overview-mini.fa-fill #sb-calweather,
+  html.overview-mini.fa-fill #sb-calweather.pos-custom{
+    left:3.2vw!important;right:auto!important;top:auto!important;bottom:5vh!important;
+    width:60vw!important;max-width:none!important;height:auto!important;max-height:none!important;
+    transform:none!important;transform-origin:bottom left!important;padding:0!important;
+    --cw-font:clamp(11px, min(6.4vh, 2.5vw), 22px)!important;
+  }
+  html.overview-mini.fa-fill #sb-calweather .cw-body{
+    display:grid!important;grid-template-columns:auto 1fr;grid-template-areas:"head now" "days days";
+    align-items:baseline;column-gap:10px;row-gap:5px;
+  }
+  html.overview-mini.fa-fill #sb-calweather .cw-head{grid-area:head;text-align:left!important}
+  html.overview-mini.fa-fill #sb-calweather .cw-now{grid-area:now;justify-content:flex-start!important}
+  html.overview-mini.fa-fill #sb-calweather .cw-days{grid-area:days;justify-content:flex-start!important;align-items:flex-start!important}
+  html.overview-mini.fa-fill #sb-calweather .cw-toolbar,
+  html.overview-mini.fa-fill #sb-calweather .cw-hourly{display:none!important}
+  html.overview-mini.fa-fill #sb-calweather .cw-day{padding:0 4px!important}
+  html.overview-mini.fa-fill #sb-calweather .cw-day:first-child{padding-left:0!important}
+  html.overview-mini.fa-fill #sb-calweather .cw-evs{min-height:0!important;flex:0 0 auto!important}
+  html.overview-mini.fa-fill #sb-calweather .cw-ev{
+    font:700 max(7px, calc(var(--cw-font,16px) * 0.5))/1.2 -apple-system,BlinkMacSystemFont,sans-serif!important;
+    max-height:none!important;overflow:hidden;white-space:normal!important;
+    display:-webkit-box!important;-webkit-box-orient:vertical;-webkit-line-clamp:2;padding-bottom:1px!important;
+  }
+  html.overview-mini.fa-fill #sb-clock,
+  html.overview-mini.fa-fill #sb-clock.pos-custom{
+    left:auto!important;top:auto!important;right:3.2vw!important;bottom:5vh!important;
+    width:auto!important;max-width:32vw!important;height:auto!important;max-height:none!important;
+    transform:none!important;transform-origin:bottom right!important;padding:0!important;
+    align-items:flex-end!important;justify-content:flex-end!important;
+    font-size:clamp(24px, min(18vh, 6.8vw), 64px)!important;
+  }
+  html.overview-mini.fa-fill #sb-clock .time{font-size:1em!important;line-height:1!important;white-space:nowrap}
+  html.overview-mini.fa-fill #sb-clock .date,
+  html.overview-mini.fa-fill #sb-date{font-size:max(10px, .32em)!important;line-height:1.2!important;margin-top:.22em!important;white-space:nowrap}
 </style>
 </head>
 <body>
@@ -2407,7 +2456,7 @@
 
 <script>
 /* Identifiable deploy build — bump Lovelace iframe ?v= separately on HA. */
-const FRAME_BUILD = '20260912-ui13';
+const FRAME_BUILD = '20261008-ui13-fill3';
 try { window.FRAME_BUILD = FRAME_BUILD; } catch (e) {}
 const FALLBACK = [
   "/local/family-album/filler_forest.jpg",
@@ -2448,6 +2497,51 @@ try {
   document.documentElement.classList.add('layout-locked');
   document.documentElement.classList.remove('hud-edit');
 } catch (e) {}
+const FILL_PARAM = (qp.get('fill') || '').toLowerCase();
+if (FILL_PARAM === '1' || FILL_PARAM === 'true') { try { document.documentElement.classList.add('fa-fill'); } catch (e) {} }
+/* Slideshow layout reset (resetlayout): clears this device's saved overlay drag/resize/zoom.
+   Triggers: ?reset=1, or input_number.album_frame_layout_reset_seq increasing (script.album_frame_reset_layout),
+   read from the parent HA frontend's hass state when embedded. Helper-driven settings come back via motion.json. */
+const FA_LAYOUT_SEQ_KEY = 'fa_layout_reset_seq';
+const FA_LAYOUT_SEQ_ENTITY = 'input_number.album_frame_layout_reset_seq';
+const FA_LAYOUT_KEYS = [
+  'fa_week_pos_v1','fa_week_scale_v1','fa_week_w_v1','fa_week_h_v1',
+  'fa_clock_pos_v1','fa_clock_scale_v1','fa_clock_w_v1','fa_clock_h_v1',
+  'fa_forecast_pos_v1','fa_forecast_scale_v1','fa_forecast_w_v1','fa_forecast_h_v1',
+  'fa_calwx_pos_v1','fa_calwx_scale_v1','fa_calwx_w_v1','fa_calwx_h_v1',
+  'fa_canvas_zoom_v1'
+];
+function faClearLayoutStorage(){
+  FA_LAYOUT_KEYS.forEach(function(k){ try { localStorage.removeItem(k); } catch (e) {} });
+}
+function faHaLayoutSeq(){
+  try {
+    if (!window.parent || window.parent === window) return null;
+    const ha = window.parent.document.querySelector('home-assistant');
+    const st = ha && ha.hass && ha.hass.states ? ha.hass.states[FA_LAYOUT_SEQ_ENTITY] : null;
+    if (!st) return null;
+    const n = Math.floor(Number(st.state));
+    return Number.isFinite(n) && n >= 0 ? n : null;
+  } catch (e) { return null; }
+}
+function faCheckLayoutReset(isInit){
+  const seq = faHaLayoutSeq();
+  if (seq == null) return false;
+  let prev = 0;
+  try { prev = parseInt(localStorage.getItem(FA_LAYOUT_SEQ_KEY) || '0', 10) || 0; } catch (e) { return false; }
+  if (seq === prev) return false;
+  if (seq > prev) faClearLayoutStorage();
+  let stored = false;
+  try { localStorage.setItem(FA_LAYOUT_SEQ_KEY, String(seq)); stored = localStorage.getItem(FA_LAYOUT_SEQ_KEY) === String(seq); } catch (e) {}
+  if (seq > prev && !isInit && stored) { try { location.reload(); } catch (e) {} }
+  return seq > prev;
+}
+if ((qp.get('reset') || '') === '1') {
+  faClearLayoutStorage();
+  try { const u = new URL(location.href); u.searchParams.delete('reset'); history.replaceState(null, '', u.pathname + u.search + u.hash); } catch (e) {}
+}
+try { faCheckLayoutReset(true); } catch (e) {}
+setInterval(function(){ try { faCheckLayoutReset(false); } catch (e) {} }, 4000);
 function hudLayoutEditAllowed(){
   if (IS_OVERVIEW_MINI || !IS_FULL_FRAME) return false;
   return !!hudEditMode;
@@ -3233,6 +3327,13 @@ function visBox(){
 function placeHud(){
   const hud = document.getElementById('sb-hud');
   if (!hud) return;
+  if (document.documentElement.classList.contains('fa-fill')) {
+    /* fill=1: drop per-device inline !important sizes so the fill layout CSS wins (Overview mini only). */
+    ['sb-calweather','sb-clock'].forEach(function(id){
+      const e = document.getElementById(id); if (!e) return;
+      ['width','height','max-width','max-height'].forEach(function(p){ if (e.style.getPropertyPriority(p) === 'important') e.style.removeProperty(p); });
+    });
+  }
   const fs = (typeof fsElement === 'function') ? fsElement() : (document.fullscreenElement || document.webkitFullscreenElement || null);
   let target = document.body;
   if (fs && fs.appendChild) target = fs;
